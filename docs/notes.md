@@ -42,6 +42,11 @@ userspace file.
 it is the only way to reproduce the prompt. After re-running the wizard, re-run
 `chezmoi add ~/.p10k.zsh`.
 
+The two KDE plasmoids are **not versioned** either: `run_onchange_13-plasmoids.sh`
+fetches them at a pinned commit, because the prayer-time widget carries a 2.7 MB
+adhan recording. Editing one locally is therefore pointless — the next re-run of
+that script replaces the whole directory.
+
 ## SSH keys
 
 `~/.ssh/id_*` is **not** versioned — back it up manually before a reinstall

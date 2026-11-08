@@ -330,18 +330,6 @@ for f in dot_config/kwinrulesrc dot_config/kxkbrc; do
   fi
 done
 
-# ─── KDE widgets ────────────────────────────────────────────────────────────
-log_section "KDE widgets"
-
-for d in dot_local/share/plasma/plasmoids/*; do
-  base=$(basename "$d")
-  if [ -d "$d" ]; then
-    log_pass "$base"
-  else
-    log_fail "$base missing"
-  fi
-done
-
 # ─── Summary ────────────────────────────────────────────────────────────────
 log_summary
 [ "$LOG_ERR" -eq 0 ] || exit 1

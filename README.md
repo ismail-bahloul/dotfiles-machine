@@ -96,7 +96,7 @@ command (and the parentheses in the text break the parse).
 |---|---|
 | `~/dotfiles/install.sh --dry-run` | machine prerequisites only, nothing is changed |
 | `~/dotfiles/install.sh --validate` | + full machine audit (`validate.sh`) |
-| `~/dotfiles/smoke.sh` | `install.sh`'s branches, offline (fake chezmoi, no sudo) |
+| `~/dotfiles/smoke.sh` | all three entry points' branches, offline (fake chezmoi/pacman, no sudo) |
 | `~/dotfiles/test.sh` | repo lint, run before pushing |
 
 `install.sh` installs `paru` and `chezmoi` if missing, applies everything and
@@ -161,6 +161,7 @@ in filename order, hence the numbers.
 | `run_once_10-fstab-shared.sh` | shared NTFS partition in fstab |
 | `run_once_11-boot-tuning.sh.tmpl` | initramfs slimming + Limine snapshot cap |
 | `run_onchange_12-peripherals.sh.tmpl` | `logid` config for the MX Master 3S (`peripherals`) |
+| `run_onchange_13-plasmoids.sh` | fetches the two KDE widgets at a pinned commit |
 
 A component switch also gates its scripts: they call `component-guard` and no-op
 when the component is off. Details in [`docs/setup.md`](docs/setup.md#how-components-gate-scripts).
@@ -185,6 +186,6 @@ chezmoi sees an unchanged script and never redeploys. `pkg-hash:` in
 
 ## License
 
-MIT for this repository. The two KDE plasmoids under
-`dot_local/share/plasma/plasmoids/` are vendored upstream projects and keep their
-own licenses (MIT / GPL-3.0+, see [`docs/setup.md`](docs/setup.md#vendored-third-party-widgets)).
+MIT for this repository. The two KDE plasmoids are no longer vendored: they are
+fetched at a pinned commit by `run_onchange_13-plasmoids.sh` and keep their own
+licenses (MIT / GPL-3.0+, see [`docs/setup.md`](docs/setup.md#third-party-widgets)).

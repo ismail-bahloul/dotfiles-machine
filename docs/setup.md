@@ -44,7 +44,7 @@ dotfiles/
 ├── install.sh                        # machine bootstrap (paru + chezmoi + apply, --dry-run)
 ├── validate.sh                       # post-install verification script
 ├── test.sh                           # pre-push lint of the repo (bash -n, JSON, untracked)
-├── smoke.sh                          # offline test of install.sh's branches (fake chezmoi)
+├── smoke.sh                          # offline test of the three entry points (fake chezmoi/pacman)
 ├── .chezmoiscripts/                   # scripts run by chezmoi, never deployed
 │   ├── run_once_01-packages.sh.tmpl      # base + enabled components (packages.d/)
 │   ├── run_once_02-wine-staging.sh.tmpl  # wine-staging runner (optional: "wine" component)
@@ -57,7 +57,8 @@ dotfiles/
 │   ├── run_once_09-material-you.sh       # Material You “follows-the-wallpaper” (kitty/btop/zed hook)
 │   ├── run_once_10-fstab-shared.sh       # shared NTFS partition in fstab
 │   ├── run_once_11-boot-tuning.sh.tmpl   # initramfs slimming + Limine snapshot cap
-│   └── run_onchange_12-peripherals.sh.tmpl # logid config (MX Master 3S) — peripherals
+│   ├── run_onchange_12-peripherals.sh.tmpl # logid config (MX Master 3S) — peripherals
+│   └── run_onchange_13-plasmoids.sh      # KDE widgets, fetched at a pinned commit
 ├── lib/                               # shell libraries, sourced by the scripts above
 │   ├── logging.sh                     # log_* helpers (+ summary counters)
 │   └── system.sh                      # install_system_file: etc/… → /etc/…
@@ -115,7 +116,6 @@ dotfiles/
 │   │   ├── zed.py                    # Zed theme ← wallpaper (hot-reloads)
 │   │   ├── zen.py                    # Zen accent + userChrome (restart Zen)
 │   │   └── prompt.py                 # p10k prompt + LS_COLORS (1x, not per prompt)
-│   ├── share/plasma/plasmoids/       # KDE widgets (thermal monitor, salat)
 │   ├── share/applications/omenctl.desktop  # application-menu entry for the TUI
 │   └── share/icons/hicolor/scalable/apps/omenctl.svg  # launcher icon
 ```
@@ -280,20 +280,28 @@ the dGPU lock. It replaces both `nbfc` and the old `power-profile` bash script
 available updates, `-n` dry run, `--force` bypass the news guard once a
 manual-intervention announcement has been read.
 
-## Vendored third-party widgets
+## Third-party widgets
 
-The two KDE plasmoids under `dot_local/share/plasma/plasmoids/` are **upstream
-projects vendored as-is** (not written here). Their licenses apply to their own
-code, independently of this repo's MIT license:
+Neither KDE plasmoid is vendored here. `run_onchange_13-plasmoids.sh` fetches
+them from upstream at a **pinned commit** (a tag can be moved, a commit cannot)
+and installs them into `~/.local/share/plasma/plasmoids/`. Bumping the ref in
+that script changes its content, which is what makes chezmoi re-run it.
 
-| Plasmoid | License | Upstream |
-|---|---|---|
-| `org.kde.olib.thermalmonitor` | MIT | https://invent.kde.org/olib/thermalmonitor |
-| `com.github.mazen.salatprayertime` | GPL-3.0+ | https://github.com/mazenmohamed203/salaatprayertime |
+Their licenses apply to their own code, independently of this repo's MIT
+license:
 
-They are vendored because they are not reliably available from the repos/AUR.
-Upstream updates will **not** reach this copy automatically — re-vendor manually
-if needed. The GPL-3.0+ text should accompany any redistribution.
+| Plasmoid | License | Upstream | Pinned |
+|---|---|---|---|
+| `org.kde.olib.thermalmonitor` | MIT | https://invent.kde.org/olib/thermalmonitor | `v0.2.7` |
+| `com.github.mazen.salatprayertime` | GPL-3.0+ | https://github.com/mazenmohamed203/salaatprayertime | `v2.5.6` |
+
+They are fetched because neither is reliably packaged, and because the prayer
+time widget ships a 2.7 MB adhan recording: a vendored copy was 76 % of this
+repository's size and drifted from upstream. A download failure is a warning,
+not a failed apply — the installed copy stays.
+
+Replacing the directory means local edits to a plasmoid are lost; that is the
+price of not vendoring it.
 
 ---
 
