@@ -18,5 +18,5 @@ Details: [install](docs/install.md) · [components](docs/components.md) ·
 [setup reference](docs/setup.md) · [boot](docs/boot-tuning.md) ·
 [theming](docs/material-you.md) · [notes](docs/notes.md)
 
-MIT — see [LICENSE](LICENSE). The two KDE plasmoids are fetched from upstream and
+MIT, see [LICENSE](LICENSE). The two KDE plasmoids are fetched from upstream and
 keep their own licenses.
