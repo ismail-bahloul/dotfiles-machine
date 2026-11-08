@@ -6,7 +6,7 @@
 # Idempotent: safe to re-run; mkinitcpio only runs if something actually changed
 # The hash below covers the etc/ files this script installs, so chezmoi re-runs
 # it when one of them changes (a plain run_once_ would not notice).
-# etc-hash: {{ range list "etc/initcpio/install/no-nouveau" "etc/initcpio/install/amdgpu-trim" "etc/mkinitcpio.conf.d/20-no-nouveau.conf" "etc/mkinitcpio.conf.d/30-amdgpu-early.conf" "etc/mkinitcpio.conf.d/40-amdgpu-trim.conf" "etc/systemd/system/nvidia-persistenced.service.d/10-vfio-skip.conf" }}{{ include . | sha256sum | trunc 8 }}{{ end }}
+# etc-hash: {{ range list "etc/initcpio/install/no-nouveau" "etc/initcpio/install/amdgpu-trim" "etc/mkinitcpio.conf.d/20-no-nouveau.conf" "etc/mkinitcpio.conf.d/30-amdgpu-early.conf" "etc/mkinitcpio.conf.d/40-amdgpu-trim.conf" "etc/systemd/system/nvidia-persistenced.service.d/10-vfio-skip.conf" "etc/systemd/system/systemd-user-sessions.service" }}{{ include . | sha256sum | trunc 8 }}{{ end }}
 #
 # Tuning steps, all measured on this machine (see README, "Boot tuning"):
 #   1. drop nouveau + its per-chipset NVIDIA firmware from the initramfs
@@ -30,6 +30,11 @@
 #      hook pulls all 691 amdgpu blobs (every ASIC) into a 56 MiB image that
 #      Limine must read off the vfat ESP and the kernel must decompress at every
 #      boot. See docs/boot-tuning.md.
+#
+# Also: a full override of systemd-user-sessions drops its network.target
+# ordering (~0.9 s off the login screen; an empty After= in a drop-in does not
+# reset the list on systemd 262), and bpftune is disabled (93 MB RSS, ~13 s
+# CPU per 4 h, TCP-only tuning unused here). See sections 10 and 11.
 # =============================================================================
 set -e
 
@@ -38,6 +43,7 @@ set -e
 source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/lib/logging.sh"
 
 SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
+source "$SCRIPT_DIR/lib/system.sh"
 
 log_info "Applying boot-time tuning..."
 
@@ -202,6 +208,32 @@ if $NEEDS_MKINITCPIO; then
   yes | sudo mkinitcpio -P 2>&1
 else
   log_skip "Initramfs unchanged, skipping mkinitcpio"
+fi
+
+# ---------------------------------------------------------------------------
+# 10. drop network.target from systemd-user-sessions (full unit override)
+# ---------------------------------------------------------------------------
+# plasmalogin waits for systemd-user-sessions.service, which the vendor unit
+# orders After=network.target -> NetworkManager (~860 ms here) sits on the path
+# to the login screen. An empty After= in a drop-in does not reset the list on
+# systemd 262 (verified), so this is a full override in /etc. Keep it in sync
+# if systemd changes the vendor unit.
+if install_system_file etc/systemd/system/systemd-user-sessions.service; then
+  sudo systemctl daemon-reload
+else
+  log_skip "systemd-user-sessions override already up to date"
+fi
+
+# ---------------------------------------------------------------------------
+# 11. disable bpftune (CachyOS default)
+# ---------------------------------------------------------------------------
+# 93 MB RSS, ~13 s CPU per 4 h and a runtime cgroup2 mount for an auto-tuner
+# that only touches TCP/network knobs; nothing in this setup depends on it.
+if systemctl is-enabled bpftune.service >/dev/null 2>&1; then
+  sudo systemctl disable --now bpftune.service
+  log_detail "disabled bpftune.service"
+else
+  log_skip "bpftune not installed/enabled"
 fi
 
 log_pass "Boot tuning complete."

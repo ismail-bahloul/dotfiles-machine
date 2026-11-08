@@ -1,0 +1,16 @@
+# Full override of the vendor unit (systemctl edit --full equivalent).
+# The only change is the removal of network.target from After=: plasmalogin
+# waits for this unit, and that ordering put NetworkManager (~860 ms here) on
+# the path to the login screen. An empty After= in a drop-in does not reset
+# the list on systemd 262 (verified), hence the full unit. Nothing here mounts
+# /home over the network; keep this file in sync if systemd changes the unit.
+[Unit]
+Description=Permit User Sessions
+Documentation=man:systemd-user-sessions.service(8)
+After=remote-fs.target nss-user-lookup.target home.mount
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/systemd/systemd-user-sessions start
+ExecStop=/usr/lib/systemd/systemd-user-sessions stop
