@@ -1,6 +1,6 @@
 # docs
 
-Documentation for this repository's own configuration — the "why" behind the
+Documentation for this repository's own configuration: the "why" behind the
 files that ship here.
 
 | Document | What it covers |

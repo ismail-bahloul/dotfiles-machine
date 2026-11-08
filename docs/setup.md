@@ -8,7 +8,7 @@ notes. Back to the [main README](../README.md).
 
 `chezmoi` reads its source directory from `~/.local/share/chezmoi`. On the
 development machine that path is a **symlink to this repository**, so editing a
-file here and running `chezmoi apply` are the same operation — there is no second
+file here and running `chezmoi apply` are the same operation, there is no second
 copy that can silently drift. A fresh machine gets a real clone at the same path
 from `install.sh`; the commands are identical either way.
 
@@ -18,7 +18,7 @@ mv ~/.local/share/chezmoi ~/.local/share/chezmoi.bak
 ln -s ~/DATA/05_Code/Projects/dotfiles-machine ~/.local/share/chezmoi
 ```
 
-`~/dotfiles` — the path the README's bootstrap block clones to — is a symlink to
+`~/dotfiles` (the path the README's bootstrap block clones to) is a symlink to
 the same repository on the development machine, for the same reason: a real
 second clone would only lag behind and run a stale `install.sh`.
 
@@ -56,14 +56,14 @@ dotfiles/
 │   ├── run_once_02-wine-staging.sh.tmpl  # wine-staging runner (optional: "wine" component)
 │   ├── run_onchange_03-omenctl.sh        # omenctl (fans + power profiles), pinned ref
 │   ├── run_once_04-omenctl.sh.tmpl       # omenctl units + udev rules
-│   ├── run_once_05-vfio-setup.sh.tmpl    # GPU passthrough (VFIO) — virtualization
-│   ├── run_once_06-libvirt-setup.sh.tmpl # libvirt services + groups — virtualization
-│   ├── run_onchange_07-looking-glass.sh.tmpl # Looking Glass shared memory — looking_glass
+│   ├── run_once_05-vfio-setup.sh.tmpl    # GPU passthrough (VFIO), virtualization
+│   ├── run_once_06-libvirt-setup.sh.tmpl # libvirt services + groups, virtualization
+│   ├── run_onchange_07-looking-glass.sh.tmpl # Looking Glass shared memory, looking_glass
 │   ├── run_once_08-kde-settings.sh       # KDE settings enforced via kwriteconfig6
 │   ├── run_once_09-material-you.sh       # Material You “follows-the-wallpaper” (kitty/btop/zed hook)
 │   ├── run_once_10-fstab-shared.sh       # shared NTFS partition in fstab
 │   ├── run_once_11-boot-tuning.sh.tmpl   # initramfs slimming + Limine snapshot cap
-│   ├── run_onchange_12-peripherals.sh.tmpl # logid config (MX Master 3S) — peripherals
+│   ├── run_onchange_12-peripherals.sh.tmpl # logid config (MX Master 3S), peripherals
 │   └── run_onchange_13-plasmoids.sh      # KDE widgets, fetched at a pinned commit
 ├── lib/                               # shell libraries, sourced by the scripts above
 │   ├── logging.sh                     # log_* helpers (+ summary counters)
@@ -133,8 +133,8 @@ What a machine installs is driven by the `components` list in
 `~/.config/chezmoi/chezmoi.toml`. `chezmoi init` seeds the file at its defaults
 (everything enabled except `wine`); change the list there and re-apply. (No
 prompt: `chezmoi init --apply` runs from `install.sh` and must not block.) A
-config that has **no** `components` key at all — written before the registry
-existed — keeps the previous behaviour: every component except `wine`. `wine =
+config that has **no** `components` key at all (written before the registry
+existed) keeps the previous behaviour: every component except `wine`. `wine =
 true` is still honoured as a legacy switch, equivalent to adding `wine` to the
 list.
 
@@ -171,10 +171,10 @@ tmpfiles/sysctl drop-ins, the logid config) are versioned under `etc/` with the
 not deployed by chezmoi itself (`etc` is in `.chezmoiignore`); a script in
 `.chezmoiscripts/` installs them:
 
-- `run_onchange_12-peripherals.sh.tmpl` — `/etc/logid.cfg`
-- `run_once_04-omenctl.sh.tmpl` — the omenctl profile/watch units and udev rules
-- `run_onchange_07-looking-glass.sh.tmpl` — the IVSHMEM tmpfiles entry and the hugepages sysctl
-- `run_once_11-boot-tuning.sh.tmpl` — the initramfs hooks and the VFIO drop-in
+- `run_onchange_12-peripherals.sh.tmpl`, `/etc/logid.cfg`
+- `run_once_04-omenctl.sh.tmpl`, the omenctl profile/watch units and udev rules
+- `run_onchange_07-looking-glass.sh.tmpl`, the IVSHMEM tmpfiles entry and the hugepages sysctl
+- `run_once_11-boot-tuning.sh.tmpl`, the initramfs hooks and the VFIO drop-in
 
 They all use `install_system_file` (`lib/system.sh`), which copies a file only if
 it differs from the installed one. They are **templates** whose header carries an
@@ -185,7 +185,7 @@ its path to the `etc-hash` list of the script that installs it.**
 
 `packages.d/` uses the same trick: `run_once_01` carries a `pkg-hash:` line over
 `packages.d/*`, so editing a package list re-runs the install (and is
-idempotent — `pacman -S --needed`, so a re-run installs nothing when the machine
+idempotent: `pacman -S --needed`, so a re-run installs nothing when the machine
 is up to date). `test.sh` enforces both: one hash per `etc/` file (coverage
 check) and one hash per `packages.d/` list (count check).
 
@@ -226,13 +226,13 @@ it owns the two EC fan setpoints, runs the tuned curve at 1 Hz, and applies
 the dGPU lock. It replaces both `nbfc` and the old `power-profile` bash script
 (kept in `myomen15/omenctl/legacy/power-profile/` for reference).
 
-- Upstream: <https://github.com/ismail-bahloul/omenctl> — **private**, on purpose
+- Upstream: <https://github.com/ismail-bahloul/omenctl> (**private**, on purpose)
   (it drives this laptop's EC fans; the public dotfiles must work without it).
   The installer picks, in order: a local checkout
   (`OMENCTL_SRC`, default `~/DATA/05_Code/Projects/myomen15/omenctl`), `gh repo
   clone` when `gh auth status` is ok (`gh auth login` once per machine), then a
   non-interactive `git clone` (SSH works via `OMENCTL_REPO`). Without any of
-  those it warns and skips, and `run_once_04` then skips the units too — a
+  those it warns and skips, and `run_once_04` then skips the units too, so a
   machine without omenctl does not end up with services pointing at nothing.
 - Installed by `run_onchange_03-omenctl.sh`: a local checkout is used when
   `OMENCTL_SRC` points at one (default: `myomen15/omenctl`), otherwise the pinned
@@ -299,7 +299,7 @@ license:
 They are fetched because neither is reliably packaged, and because the prayer
 time widget ships a 2.7 MB adhan recording: a vendored copy was 76 % of this
 repository's size and drifted from upstream. A download failure is a warning,
-not a failed apply — the installed copy stays.
+not a failed apply: the installed copy stays.
 
 Replacing the directory means local edits to a plasmoid are lost; that is the
 price of not vendoring it.

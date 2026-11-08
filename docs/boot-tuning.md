@@ -14,14 +14,14 @@ is machine state (NVRAM), not something a dotfiles repo can version.
   "Windows Boot Manager" label pointing at a deleted `\EFI\cachyos\grubx64.efi`.
   They are gone (both were unbootable) and Limine is kept early in `BootOrder`
   so it cannot be shadowed. The HP firmware re-promotes the USB entry to the
-  front on its own — that one fails fast and is left in place. Check with
+  front on its own; that one fails fast and is left in place. Check with
   `efibootmgr`, repair with `efibootmgr -o`. The bogus Windows/grub entry came
   back once (2026-10-17) and was put first in `BootOrder`; `limine-boot-win` now
   deletes it before booting Windows and re-creates the real entry if needed.
 - **nouveau and its per-chipset NVIDIA firmware dropped from the initramfs**
   (`etc/initcpio/install/no-nouveau`). The `kms` hook resolves the NVIDIA GPU
   modalias to *both* `nvidia` and `nouveau`, and nouveau's `modinfo` declares the
-  GSP firmware of every GPU generation it supports — roughly **140 MiB** of
+  GSP firmware of every GPU generation it supports, roughly **140 MiB** of
   unused firmware in the early CPIO. This machine uses the proprietary driver
   (nouveau is blacklisted in `nvidia-utils.conf`), so the hook removes it.
   Initramfs size: **248 MB → 55 MB**.
@@ -38,7 +38,7 @@ is machine state (NVRAM), not something a dotfiles repo can version.
   `kms` hook only *copies* `amdgpu.ko` into the image; nothing pulled it in
   during the initrd, so the iGPU was bound by udev coldplug in the real root.
   Measured across five boots (`journalctl -b -o short-monotonic`), the driver
-  only appears **~2.3 s after `Finished Plymouth switch root service`** — a
+  only appears **~2.3 s after `Finished Plymouth switch root service`**, a
   window in which *nothing* logs, kernel or systemd, until the first `amdgpu`
   line. Plymouth (which needs a DRM node) and everything behind the display
   waits it out. (An earlier revision of this page wrongly claimed the `kms` hook
@@ -73,12 +73,12 @@ before → after (two consecutive boots, same machine):
 | userspace  | 6.33 s  | 5.44 s  |
 | **total**  | **21.10 s** | **18.08 s** |
 
-(firmware/loader moved the *wrong* way by ~0.45 s combined — that is BIOS POST
+(firmware/loader moved the *wrong* way by ~0.45 s combined, that is BIOS POST
 and Limine menu jitter, not related to the change; the OS-side gain is ~3.5 s.)
 A side effect worth noting: `omenctl-profile.service` (then named
 `power-profile.service`; 2.0 s → 0.12 s) and
 `nvidia-persistenced.service` (1.7 s → 0.02 s) also got much faster, and
-`proton.VPN.service` left the critical chain — they were previously serialised
+`proton.VPN.service` left the critical chain; they were previously serialised
 behind the stalled udev/GPU work.
 
 What is left, roughly in order of payoff:
@@ -90,7 +90,7 @@ What is left, roughly in order of payoff:
 - The **udev coldplug tail**: `serial8250` `ttyS0..3` and the `SHARED` NTFS
   partition settle at ~5.9 s (async, after `graphical.target`, so they do not
   block the desktop). `8250.nr_uarts=0` or a module blacklist would quiet them.
-- **`run-bpftune-cgroupv2.mount`** appeared on the critical chain (~4.7 s) — a
+- **`run-bpftune-cgroupv2.mount`** appeared on the critical chain (~4.7 s), a
   `bpftune` unit, not investigated.
 - **firmware (4.7 s) + loader (1.8 s)** are the floor: the HP POST dominates and
   cannot be tuned from the OS; the Limine menu timeout is already 1 s.
@@ -107,9 +107,9 @@ between 9.1 and 9.8 s.
   system takes **26 ms**; at boot the window is shared with udev coldplug,
   `ldconfig`, `tmpfiles` and the tail of the GPU bring-up, all on the same
   NVMe. So `x-systemd.automount` on `/boot` would only move the wait, not
-  remove it — dropped as an idea.
+  remove it (dropped as an idea).
 - **`snapper-boot.service` is not competing either**: it finishes at 10.9 s,
-  *after* the mounts. Reordering it would change nothing — dropped.
+  *after* the mounts. Reordering it would change nothing (dropped).
 - **`run-bpftune-cgroupv2.mount` identified**: `bpftune-git` (CachyOS)
   transient cgroup2 mount for its BPF programs. Off today's blame list
   (jitter, not a standing cost). Nothing to do.
@@ -194,8 +194,8 @@ saved under `limine_history/`, not the rebuilt one.
 initramfs from 56 to 28 MiB and the loader and initrd fell with it.
 
 **Plymouth was then removed, measured, and put back.** It is worth only
-**−0.41 s** — not the 1.15 s its units account for on their own (they overlap
-with other work, so most of that time was never on the critical path) — and the
+**−0.41 s**, not the 1.15 s its units account for on their own (they overlap
+with other work, so most of that time was never on the critical path), and the
 price is the boot splash. The splash was judged worth more than 0.41 s, so the
 hooks and the `splash` cmdline are restored and the deployed boot is the 16.6 s
 row above.
@@ -205,20 +205,20 @@ the boot *before* the firmware trim, so nothing here introduced them.
 
 ### What is left, and what is not tunable
 
-- **firmware, 4.6 s** — HP POST: SEC/PEI (memory training, EC handshake, PSP/SMU,
+- **firmware, 4.6 s**, HP POST: SEC/PEI (memory training, EC handshake, PSP/SMU,
 hardware GPU bring-up) then DXE enumeration and the boot manager. Already at its
 floor, checked against the live `Setup` store: POST Hotkey Delay (`Timeout`) = 0,
 PXE ROM (off 218) = 0, CDROM (227) = 0, floppy (228) = 0, network boot (230) = 0,
-Secure Boot (233) = 0 — and this firmware's IFR has **no Fast Boot option** at
+Secure Boot (233) = 0, and this firmware's IFR has **no Fast Boot option** at
 all. Nothing left to turn off from the OS.
-- **loader, 1.5 s** — reading 45 MiB (17 kernel + 26 initramfs) off the vfat ESP at
+- **loader, 1.5 s**, reading 45 MiB (17 kernel + 26 initramfs) off the vfat ESP at
 ~30 MB/s. That is the firmware's own EFI file I/O, not the OS; the only lever is a
 smaller image.
-- **initrd, 5.0 s / userspace, 4.2 s** — the remaining OS-side time.
+- **initrd, 5.0 s / userspace, 4.2 s**, the remaining OS-side time.
 `graphical.target` is now gated by `multi-user.target`'s wants (`wpa_supplicant`
 @3.75 s, `plymouth-quit` now 14 ms), not by anything expensive.
 - One POST-side surface was **not** touched: the PBS "power of <device>" rails for
-devices this machine does not have (`ODD power`, `WWAN`, `EVAL Slot`, `HDD` — all
+devices this machine does not have (`ODD power`, `WWAN`, `EVAL Slot`, `HDD`, all
 1). Speculative gain, and it needs firmware writes plus reboots to test.
 
 ## Tooling gotcha

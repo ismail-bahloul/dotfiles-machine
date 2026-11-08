@@ -1,4 +1,4 @@
-# RME Babyface Pro FS — operating modes
+# RME Babyface Pro FS: operating modes
 
 This folder holds the config for the external **RME Babyface Pro FS** interface
 and the laptop's internal audio. Two mutually exclusive modes for the RME:
@@ -31,14 +31,14 @@ systemctl --user restart pipewire wireplumber pipewire-pulse
 ```
 
 > **Important**: proprietary and CC modes cannot run at the same time over
-> USB — only one streaming session per device. The TuxMix driver and the
+> USB; only one streaming session per device. The TuxMix driver and the
 > `snd-usb-audio` kernel driver target the same interface.
 
-## Internal Ryzen interface — specific quantum
+## Internal Ryzen interface: specific quantum
 
 - `custom-settings.conf`: default global quantum = `64` (suited for RME CC).
   The `min-quantum`/`max-quantum` are **deliberately removed** so that not all
   interfaces are locked onto a rigid floor.
 - `52-ryzen-quantum.conf` (WirePlumber): forces `256` on the internal Ryzen
-  sound card (`alsa_{output,input}.pci-0000_07_00.6.*`) only — 64 causes
+  sound card (`alsa_{output,input}.pci-0000_07_00.6.*`) only; 64 causes
   underruns there. Adjust `node.quantum.min/max` to test other values.

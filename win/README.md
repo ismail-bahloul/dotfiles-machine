@@ -1,4 +1,4 @@
-# Windows 11 — dual boot helpers
+# Windows 11: dual boot helpers
 
 Files meant to be run **on the Windows side** (they are not deployed by chezmoi into `~/`).
 
@@ -27,7 +27,7 @@ powercfg /h off
 
 | Part. | Content | UUID | Role |
 |---|---|---|---|
-| `nvme1n1p2` | Windows `C:` | `01DD20323D16A210` | Windows OS — do **not** mount in rw under Linux (Fast Startup) |
-| `nvme1n1p3` | `SHARED` (402 GB) | `5CAC12755C11BA05` | Data shared between OSes — mountable in rw (ntfs-3g) |
+| `nvme1n1p2` | Windows `C:` | `01DD20323D16A210` | Windows OS: do **not** mount in rw under Linux (Fast Startup) |
+| `nvme1n1p3` | `SHARED` (402 GB) | `5CAC12755C11BA05` | Data shared between OSes: mountable in rw (ntfs-3g) |
 
-The Linux clock (`/etc/adjtime` = `UTC`) is already correct — change nothing on the Linux side.
+The Linux clock (`/etc/adjtime` = `UTC`) is already correct; change nothing on the Linux side.

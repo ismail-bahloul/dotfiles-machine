@@ -24,7 +24,7 @@ uninstalled.
 | `apps` | firefox, zed, bitwarden(+cli), Material You theming packages |
 | `peripherals` | logiops + the MX Master 3S `logid` config |
 | `looking_glass` | Looking Glass host client (IVSHMEM) |
-| `wine` | wine-staging 9.21 standalone runner, winetricks, yabridge — **off by default** |
+| `wine` | wine-staging 9.21 standalone runner, winetricks, yabridge, **off by default** |
 
 A component also gates its scripts (`component-guard`): disabling one turns its
 `run_` scripts into no-ops. Details in [setup.md](setup.md#how-components-gate-scripts).

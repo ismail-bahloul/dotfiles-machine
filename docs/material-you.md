@@ -1,4 +1,4 @@
-# Material You — “follows-the-wallpaper”
+# Material You: “follows-the-wallpaper”
 
 The desktop (terminal + system monitor + editor + prompt) takes the colors of the
 wallpaper, recolored by **`kde-material-you-colors`** (AUR) on every wallpaper
@@ -27,7 +27,7 @@ refreshed on every change. **No process launched on every prompt** (previously:
 
 **Zed**: `zed.py` writes `~/.config/zed/themes/materialyou.json`
 (custom "Material You" theme, Ayu Dark structure + wallpaper colors). Zed watches
-this folder and **hot-reloads** — no need to restart the editor. The theme is
+this folder and **hot-reloads**; no need to restart the editor. The theme is
 selected via the `theme` key of `~/.config/zed/settings.json`.
 
 **Zen Browser**: `zen.py` writes, into the active profile:
@@ -75,8 +75,8 @@ legacy pref stays `true` in `prefs.js`, which is harmless without the files.
 
 - **kitty**: `background_opacity 0.85` (native kitty) → transparent background,
   **opaque text**.
-- **All other windows**: a single KWin rule — group `Transparent_windows` in
-  `kwinrulesrc`, **without `wmclass`** so it matches *all* windows — applies
+- **All other windows**: a single KWin rule (group `Transparent_windows` in
+  `kwinrulesrc`, **without `wmclass`** so it matches *all* windows) applies
   `opacity 90/90`. Konsole, Zed, Dolphin, System Settings are therefore glassy
   like the rest, by the same mechanism.
 - **Currently disabled**: both rules are versioned with `Enabled=false`, so
@@ -89,7 +89,7 @@ legacy pref stays `true` in `prefs.js`, which is harmless without the files.
   `chezmoi add` (otherwise an apply reverts it).
 
 > Why: KWin does not render a transparent background, it **blurs what is behind**.
-> Transparency must come from the app (background only) to keep the text sharp —
+> Transparency must come from the app (background only) to keep the text sharp;
 > possible only if the app exposes it (kitty yes; Konsole only for the terminal
 > area). Otherwise the KWin rule multiplies the whole window (text dimmed 10 %).
 
@@ -108,7 +108,7 @@ per-screen KWin setting.)
 The **engine** itself is not pinned by the dotfiles: which blur runs is a
 one-click choice in *System Settings → Desktop Effects*. What matters is that
 `better-blur-dx` and the stock blur are **never enabled together** (two blurs =
-double blur) — so on a fresh install: enable `better-blur-dx`, disable the stock
+double blur), so on a fresh install: enable `better-blur-dx`, disable the stock
 one. The DX parameters themselves are imposed by `run_once_08` (they are what the
 theming depends on, and they are not reachable by hand).
 

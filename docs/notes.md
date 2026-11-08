@@ -1,7 +1,7 @@
 # Working notes
 
 Things worth knowing when maintaining this repo or debugging this machine. Not
-everything here is interesting to read — this is the stuff that bites.
+everything here is interesting to read: this is the stuff that bites.
 
 ## Versioned vs non-versioned config
 
@@ -21,16 +21,16 @@ versioned**: they are rewritten at runtime (by Plasma, and by
 `kde-material-you-colors` for the colors), so versioning them fights the owner
 and a `chezmoi apply` would overwrite your settings. `run_once_08` declaratively
 imposes the keys that matter instead. `kglobalshortcutsrc` used to be versioned
-and had to be resynced by hand twice — shortcuts are now edited in System
+and had to be resynced by hand twice. Shortcuts are now edited in System
 Settings and left to Plasma.
 
 `~/.config/zsh/secrets` is listed in `.chezmoiignore`; it must never be
 committed. `~/.config/gh/hosts.yml` is ignored for the same reason: `gh` writes
 its OAuth token there (`gh auth login`), and this repo is public. Only
-`gh/config.yml` is versioned — it carries the `co` alias, nothing secret.
+`gh/config.yml` is versioned: it carries the `co` alias, nothing secret.
 
-`~/.gitconfig` **is** versioned — in the userspace repository
-(`dotfiles`, `dot_gitconfig`), not here — but without the `[user]`
+`~/.gitconfig` **is** versioned in the userspace repository
+(`dotfiles`, `dot_gitconfig`), not here, but without the `[user]`
 identity: this repo is public, so name/email live in `~/.config/git/local`
 (untracked, mode 600) and are pulled in by an `[include]`. On a fresh install,
 create that file (or `git config user.*` per repo). After a
@@ -45,7 +45,7 @@ it is the only way to reproduce the prompt. After re-running the wizard, re-run
 
 The two KDE plasmoids are **not versioned** either: `run_onchange_13-plasmoids.sh`
 fetches them at a pinned commit, because the prayer-time widget carries a 2.7 MB
-adhan recording. Editing one locally is therefore pointless — the next re-run of
+adhan recording. Editing one locally is therefore pointless: the next re-run of
 that script replaces the whole directory.
 
 The userspace files (`~/.zshrc`, `~/.gitconfig`, kitty, gh, `deploy-plugins`)
@@ -54,7 +54,7 @@ are not versioned here at all: they live in `dotfiles`, applied by
 
 ## SSH keys
 
-`~/.ssh/id_*` is **not** versioned — back it up manually before a reinstall
+`~/.ssh/id_*` is **not** versioned: back it up manually before a reinstall
 (too sensitive to keep in a repo).
 
 ## Audio (PipeWire)
@@ -63,12 +63,12 @@ Config is versioned in `dot_config/pipewire/` and `dot_config/wireplumber/`:
 
 - **RME Babyface Pro FS** is switchable between **CC** mode (kernel driver,
   `51-rme.conf`) and **proprietary** mode (in-house TuxMix driver via
-  `50-tuxmix.conf`) — see `dot_config/pipewire/pipewire.conf.d/README.md`.
+  `50-tuxmix.conf`); see `dot_config/pipewire/pipewire.conf.d/README.md`.
 - **Per-interface quantum**: global = 64 (RME CC), but the internal Ryzen sound
-  card forces 256 (`52-ryzen-quantum.conf`) — 64 causes underruns there.
+  card forces 256 (`52-ryzen-quantum.conf`); 64 causes underruns there.
 
 These quantum and node-name rules are specific to this laptop (Ryzen
-`pci-0000_07_00.6`, RME USB) — not portable to other machines.
+`pci-0000_07_00.6`, RME USB). Not portable to other machines.
 
 ## Theming
 
@@ -83,7 +83,7 @@ The initramfs and UEFI boot-entry work is in [`boot-tuning.md`](boot-tuning.md).
 `cachyos-iw-set-regdomain.service` (path-triggered on `/etc/localtime`)
 derives the country from `/usr/share/zoneinfo/zone.tab`. It can fail with
 `zone.tab: No such file or directory` when a `tzdata` upgrade swaps that file
-while the unit runs — observed once, right at the `tzdata` upgrade during a
+while the unit runs; observed once, right at the `tzdata` upgrade during a
 `uu` run. The failure is transient and harmless: the domain already set (FR)
 stays in force, and the next timezone change re-runs the unit. Re-run it to
 clear the failed state instead of building a workaround:
