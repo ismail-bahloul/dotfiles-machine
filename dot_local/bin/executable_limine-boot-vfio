@@ -1,22 +1,20 @@
 #!/bin/bash
-# One-time boot to VFIO GPU passthrough kernel
-# Boot Limine with VFIO entry selected
+# One-time boot to the VFIO GPU passthrough entry (kernel-agnostic)
 LIMINE_CONF="/boot/limine.conf"
+SELF_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 LIMINE_ID=$(efibootmgr -v 2>/dev/null | grep -i "Limine" | head -1 | sed 's/Boot\([0-9a-fA-F]*\).*/\1/')
 EFIVAR_PATH=$(sudo find /sys/firmware/efi/efivars -name "LimineLastBootedEntry-*" 2>/dev/null | head -1)
 
-# Select by path, not by index: limine-entry-tool now wraps the kernels in a
-# `/+CachyOS` menu, and the old grep-counted index was off by one because
-# Limine counts that menu as entry 1 (1-based). The path is layout-independent.
-ENTRY_PATH="CachyOS/linux-cachyos-vfio"
-
-if [ -z "$LIMINE_ID" ]; then
-  echo "Error: Limine boot entry not found"
+# Select by path, not by index: the entry name depends on the kernel and the
+# menu layout (limine-entry-tool wraps kernels in a menu), so derive it from
+# limine.conf rather than hardcoding a kernel name.
+if ! ENTRY_PATH=$(sudo /usr/bin/python3 "$SELF_DIR/limine-entry-path" "$LIMINE_CONF" vfio); then
+  echo "VFIO entry not found in $LIMINE_CONF"
   exit 1
 fi
 
-if ! sudo grep -qm1 '^[[:space:]]*//linux-cachyos-vfio$' "$LIMINE_CONF"; then
-  echo "VFIO entry not found in $LIMINE_CONF"
+if [ -z "$LIMINE_ID" ]; then
+  echo "Error: Limine boot entry not found"
   exit 1
 fi
 

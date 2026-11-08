@@ -1,39 +1,104 @@
 #!/usr/bin/env python3
-"""Add VFIO kernel entry to limine.conf if not present."""
-import re, sys
+"""Add a VFIO copy of the normal Linux boot entry to limine.conf.
 
-LIMINE_CONF = sys.argv[1] if len(sys.argv) > 1 else "/boot/limine.conf"
+The VFIO entry is a verbatim copy of the first non-VFIO Linux entry (path,
+module_path, cmdline) with `iommu=pt vfio-pci.ids=...` appended. No kernel
+name, subvolume or menu layout is hardcoded, so the same helper works on
+CachyOS (linux-cachyos) and on stock Arch (linux, linux-zen, ...).
 
-with open(LIMINE_CONF) as f:
-    content = f.read()
+Idempotent: exits 0 if any entry already carries `vfio-pci.ids=`.
+"""
+import sys
 
-if "linux-cachyos-vfio" in content:
+CONF = sys.argv[1] if len(sys.argv) > 1 else "/boot/limine.conf"
+IDS = "10de:249d,10de:228b"
+
+with open(CONF) as f:
+    lines = f.readlines()
+
+menus = []    # [(indent, name)]
+entries = []  # [dict]
+cur = None
+
+
+def flush(end):
+    global cur
+    if cur and cur["path"] and cur["module"] and cur["cmdline"] is not None:
+        cur["end"] = end
+        entries.append(cur)
+    cur = None
+
+
+for i, line in enumerate(lines):
+    if not line.strip() or line.lstrip().startswith("#"):
+        continue
+    indent = len(line) - len(line.lstrip())
+    text = line.strip()
+    if text.startswith("//"):
+        flush(i)
+        menus = [m for m in menus if m[0] < indent]
+        cur = {
+            "indent": indent,
+            "name": text[2:].strip(),
+            "menu": [m[1] for m in menus],
+            "path": None,
+            "module": None,
+            "cmdline": None,
+            "protocol": None,
+        }
+    elif text.startswith("/"):
+        flush(i)
+        menus = [m for m in menus if m[0] < indent]
+        menus.append((indent, text[1:].strip().lstrip("+")))
+    elif cur is not None:
+        key, _, value = text.partition(":")
+        value = value.strip()
+        if key == "path":
+            cur["path"] = value
+        elif key == "module_path":
+            cur["module"] = value
+        elif key == "cmdline":
+            cur["cmdline"] = value
+        elif key == "protocol":
+            cur["protocol"] = value
+flush(len(lines))
+
+if not entries:
+    print("    ERROR: no Linux entry (path + module_path + cmdline) in " + CONF)
+    sys.exit(1)
+
+if any("vfio-pci.ids=" in e["cmdline"] for e in entries):
     print("    VFIO Limine entry already exists")
     sys.exit(0)
 
-# Find machine-id and root UUID
-mid = re.search(r'comment: machine-id=([0-9a-f]+)', content)
-root_uuid = re.search(r'root=UUID=([0-9a-f-]+)', content)
-if not mid or not root_uuid:
-    print("    ERROR: could not find machine-id or root UUID in limine.conf")
-    sys.exit(1)
+src = entries[0]
+name = src["name"] + "-vfio"
 
-# Insert VFIO entry after the first //linux-cachyos entry's cmdline
-# Find the cmdline line of the first linux-cachyos entry
-pattern = r'(  cmdline: [^\n]+\n)(?=\s*//)'
-replacement = r'\1' + f"""  //linux-cachyos-vfio
-  ### Manual VFIO entry - GPU passthrough
-  comment: GPU Passthrough (VFIO)
-  comment: kernel-id=linux-cachyos-vfio
-  protocol: linux
-  module_path: boot():/{mid.group(1)}/linux-cachyos/initramfs-linux-cachyos
-  path: boot():/{mid.group(1)}/linux-cachyos/vmlinuz-linux-cachyos
-  cmdline: quiet nowatchdog splash rw rootflags=subvol=/@ root=UUID={root_uuid.group(1)} iommu=pt vfio-pci.ids=10de:249d,10de:228b
+if any(e["name"] == name for e in entries):
+    print("    VFIO Limine entry already exists (name)")
+    sys.exit(0)
 
-"""
+cmdline = src["cmdline"].split()
+if "iommu=pt" not in cmdline:
+    cmdline.append("iommu=pt")
+if not any(t.startswith("vfio-pci.ids=") for t in cmdline):
+    cmdline.append("vfio-pci.ids=" + IDS)
 
-new_content = re.sub(pattern, replacement, content, count=1)
+child = " " * (src["indent"] + 2)
+entry = " " * src["indent"]
+block = [
+    entry + "//" + name + "\n",
+    child + "comment: GPU Passthrough (VFIO)\n",
+    child + "comment: kernel-id=" + name + "\n",
+    child + "protocol: " + (src["protocol"] or "linux") + "\n",
+    child + "module_path: " + src["module"] + "\n",
+    child + "path: " + src["path"] + "\n",
+    child + "cmdline: " + " ".join(cmdline) + "\n",
+    "\n",
+]
 
-with open(LIMINE_CONF, 'w') as f:
-    f.write(new_content)
-print("    VFIO Limine entry added")
+lines[src["end"]:src["end"]] = block
+with open(CONF, "w") as f:
+    f.writelines(lines)
+
+print("    VFIO Limine entry added (" + "/".join(src["menu"] + [name]) + ")")

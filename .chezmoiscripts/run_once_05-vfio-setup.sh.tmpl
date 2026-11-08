@@ -57,19 +57,24 @@ fi
 log_pass "VFIO setup complete. Reboot required for changes to take effect."
 
 # ---------------------------------------------------------------------------
-# 4. Add VFIO kernel entry in Limine (if not already present)
+# 4. Add a VFIO copy of the normal Linux entry (optional, kernel-agnostic)
 # ---------------------------------------------------------------------------
+# The helper copies whatever entry Limine boots (path, module_path, cmdline)
+# and appends vfio-pci.ids=. Nothing here assumes a kernel name or a menu
+# layout, so it works with linux-cachyos on CachyOS and linux/linux-zen on a
+# stock Arch. `sudo test` because /boot/limine.conf is root-only.
 LIMINE_CONF="/boot/limine.conf"
-if sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF" 2>/dev/null; then
+if ! sudo test -f "$LIMINE_CONF"; then
+  log_skip "no $LIMINE_CONF (Limine not installed?) — VFIO boot entry not added"
+elif sudo grep -q 'vfio-pci.ids=' "$LIMINE_CONF" 2>/dev/null; then
   log_detail "VFIO Limine entry already exists"
-else
-  log_detail "Adding VFIO kernel entry to Limine..."
-
-  # Check if helper script exists
-  if [ -f "$SCRIPT_DIR/dot_local/bin/.add-vfio-entry" ]; then
-    sudo /usr/bin/python3 "$SCRIPT_DIR/dot_local/bin/.add-vfio-entry" "$LIMINE_CONF"
+elif [ -f "$SCRIPT_DIR/dot_local/bin/.add-vfio-entry" ]; then
+  log_detail "Adding the VFIO entry to Limine..."
+  if sudo /usr/bin/python3 "$SCRIPT_DIR/dot_local/bin/.add-vfio-entry" "$LIMINE_CONF"; then
     log_detail "VFIO Limine entry added"
   else
-    log_warn ".add-vfio-entry helper not found, skipping Limine entry"
+    log_warn "could not add the VFIO Limine entry — add it by hand if needed"
   fi
+else
+  log_warn ".add-vfio-entry helper not found, skipping Limine entry"
 fi

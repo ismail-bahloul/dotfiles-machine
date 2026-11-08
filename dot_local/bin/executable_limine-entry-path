@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""Print a Limine entry path from limine.conf.
+
+Usage: limine-entry-path <limine.conf> [linux|vfio]
+
+`linux` prints the first entry whose cmdline has no `vfio-pci.ids=` (the normal
+boot); `vfio` prints the first one that has it. The path is the menu path plus
+the entry name, e.g. `CachyOS/linux-cachyos`: exactly what Limine's
+`default_entry` and the remember-last-entry EFI variable expect.
+
+Exits 1 when no matching entry exists.
+"""
+import sys
+
+conf = sys.argv[1]
+want_vfio = len(sys.argv) > 2 and sys.argv[2] == "vfio"
+
+menus = []    # [(indent, name)]
+entries = []  # [(path, has_vfio)]
+cur = None
+
+
+def flush():
+    global cur
+    if cur is not None and cur["cmdline"] is not None:
+        entries.append(("/".join(cur["menu"] + [cur["name"]]), cur["vfio"]))
+    cur = None
+
+
+for line in open(conf):
+    if not line.strip() or line.lstrip().startswith("#"):
+        continue
+    indent = len(line) - len(line.lstrip())
+    text = line.strip()
+    if text.startswith("//"):
+        flush()
+        menus = [m for m in menus if m[0] < indent]
+        cur = {
+            "indent": indent,
+            "name": text[2:].strip(),
+            "menu": [m[1] for m in menus],
+            "cmdline": None,
+            "vfio": False,
+        }
+    elif text.startswith("/"):
+        flush()
+        menus = [m for m in menus if m[0] < indent]
+        menus.append((indent, text[1:].strip().lstrip("+")))
+    elif cur is not None and text.startswith("cmdline:"):
+        cur["cmdline"] = text
+        cur["vfio"] = "vfio-pci.ids=" in text
+flush()
+
+for path, has_vfio in entries:
+    if has_vfio == want_vfio:
+        print(path)
+        sys.exit(0)
+sys.exit(1)
