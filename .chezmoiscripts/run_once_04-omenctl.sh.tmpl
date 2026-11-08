@@ -49,14 +49,14 @@ sudo systemctl daemon-reload 2>/dev/null || true
 # ---------------------------------------------------------------------------
 # omenctl must already be installed (run_onchange_03-omenctl.sh)
 # ---------------------------------------------------------------------------
-# Its standalone repo is private, so a machine without credentials (or without
-# the HP OMEN hardware at all) legitimately has no omenctl. Deploying its units
+# The repo is public, but a machine without the HP OMEN hardware (or where the
+# install was deliberately skipped) legitimately has no omenctl. Deploying its units
 # anyway would leave services pointing at a missing binary, failing at every
 # boot — warn, skip those units, and keep the rest of this script.
 OMENCTL_OK=true
 for f in /usr/local/bin/omenctl /usr/local/bin/omenctl-run.sh /etc/systemd/system/omenctl.service; do
   if [ ! -e "$f" ]; then
-    log_warn "$f is missing — omenctl was not installed (private repo, no credentials?)"
+    log_warn "$f is missing — omenctl was not installed (not an OMEN machine?)"
     OMENCTL_OK=false
   fi
 done

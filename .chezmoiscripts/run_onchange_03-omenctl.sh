@@ -5,15 +5,9 @@
 # content, so bumping it re-runs the install.
 # Install/update omenctl — fans + power profiles for the HP OMEN 15-en1xxx.
 #
-# omenctl is developed in myomen15 and published as a standalone repo. Use a
-# local checkout when one is present (the development loop), otherwise clone
-# the standalone repo. Override either path with OMENCTL_SRC / OMENCTL_REPO.
-#
-# The standalone repo is PRIVATE: without credentials the clone is skipped with
-# a warning (the rest of the dotfiles applies normally). Provide one of:
-#   OMENCTL_SRC=/path/to/omenctl            local checkout (best on this laptop)
-#   `gh auth login` once                     gh clones it with its own token
-#   OMENCTL_REPO=git@github.com:…omenctl.git  SSH, with a key registered
+# omenctl lives in its own public repo (github.com/ismail-bahloul/omenctl).
+# Use the local checkout when one is present (the development loop), otherwise
+# clone the pinned release. Override either path with OMENCTL_SRC / OMENCTL_REPO.
 # =============================================================================
 set -e
 
@@ -22,10 +16,10 @@ set -e
 source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/lib/logging.sh"
 
 OMENCTL_REPO="${OMENCTL_REPO:-https://github.com/ismail-bahloul/omenctl.git}"
-OMENCTL_LOCAL="${OMENCTL_SRC:-$HOME/DATA/05_Code/Projects/myomen15/omenctl}"
+OMENCTL_LOCAL="${OMENCTL_SRC:-$HOME/DATA/05_Code/Projects/omenctl}"
 # Pinned release. Bump this line to publish a new version; run_onchange_ sees
 # the changed content and re-runs this script.
-OMENCTL_REF="${OMENCTL_REF:-v0.4.0}"
+OMENCTL_REF="${OMENCTL_REF:-v0.5.0}"
 MARKER=/usr/local/share/omenctl.rev
 
 WORKDIR=""
@@ -38,30 +32,15 @@ if [ -f "$OMENCTL_LOCAL/omenctl.py" ]; then
 else
   WORKDIR=$(mktemp -d)
   log_info "Cloning omenctl $OMENCTL_REF from $OMENCTL_REPO..."
-  cloned=false
-  # The standalone repo is private, so it needs credentials. `gh` is already
-  # installed by base.pacman (github-cli) and carries its own token: one
-  # `gh auth login` per machine is enough, without touching the git credential
-  # helper. Try that first, then a plain clone (never interactive: chezmoi runs
-  # this non-interactively, where git's prompt bypasses the redirection — it goes
-  # to /dev/tty — and blocks or prints garbage).
-  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-    if gh repo clone ismail-bahloul/omenctl "$WORKDIR/omenctl" -- --depth=1 --branch "$OMENCTL_REF" >/dev/null 2>&1; then
-      cloned=true
-    fi
-  fi
-  if ! $cloned; then
-    # Do not abort the whole apply on failure: omenctl drives this laptop's fans,
-    # nothing else in the dotfiles depends on it, so a missing credential is a
-    # warning, not a break.
-    if ! clone_err=$(GIT_TERMINAL_PROMPT=0 git clone --depth=1 --branch "$OMENCTL_REF" "$OMENCTL_REPO" "$WORKDIR/omenctl" 2>&1); then
-      printf '%s\n' "$clone_err"
-      log_warn "omenctl not updated: $OMENCTL_REPO is private and no credentials are available"
-      log_detail "run 'gh auth login' once (gh ships with base.pacman), or set OMENCTL_SRC=/path/to/omenctl"
-      log_detail "SSH also works: OMENCTL_REPO=git@github.com:ismail-bahloul/omenctl.git"
-      log_skip "skipping omenctl — the fans stay on the EC default curve"
-      exit 0
-    fi
+  # Never interactive: chezmoi runs this non-interactively, where git's prompt
+  # goes to /dev/tty and would block. The repo is public, so no credentials are
+  # needed; a network failure is a warning, not a break.
+  if ! clone_err=$(GIT_TERMINAL_PROMPT=0 git clone --depth=1 --branch "$OMENCTL_REF" "$OMENCTL_REPO" "$WORKDIR/omenctl" 2>&1); then
+    printf '%s\n' "$clone_err"
+    log_warn "omenctl not updated: could not clone $OMENCTL_REPO"
+    log_detail "check the network, or set OMENCTL_SRC=/path/to/omenctl"
+    log_skip "skipping omenctl — the fans stay on the EC default curve"
+    exit 0
   fi
   SRC="$WORKDIR/omenctl"
 fi
