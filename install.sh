@@ -173,11 +173,14 @@ else
   fi
 fi
 
-# ─── Portable layer ────────────────────────────────────────
 # ─── Portable layer ─────────────────────────────────────────────────────────
 # The userspace layer lives in its own repository (dotfiles) and is applied
-# here from a pinned tag, so /m alone leaves a complete machine and the two
-# layers cannot drift. DOTFILES_PORTABLE_SRC uses a local checkout instead.
+# here from a pinned tag, so /m alone leaves a complete machine.
+# The pin is where a fresh clone starts, not a leash: /d (the userspace entry
+# point) follows main, and forcing the tag back over that checkout undid a /d
+# run made seconds earlier, which looked like a fix "coming back". A checkout
+# sitting on main is left alone; DOTFILES_PORTABLE_ALLOW_DOWNGRADE forces it.
+# DOTFILES_PORTABLE_SRC uses a local checkout instead.
 log_section "Portable dotfiles"
 
 PORTABLE_REPO="${DOTFILES_PORTABLE_REPO:-https://github.com/ismail-bahloul/dotfiles.git}"
@@ -185,12 +188,34 @@ PORTABLE_REF="${DOTFILES_PORTABLE_REF:-v1.0.1}"
 PORTABLE_DIR="${DOTFILES_PORTABLE_DIR:-$HOME/.local/share/dotfiles-portable}"
 PORTABLE_SRC="${DOTFILES_PORTABLE_SRC:-}"
 
+# The commit origin points at for a tag, a branch or HEAD itself. A shallow
+# clone carries no ancestry, so comparing hashes is the only reliable test here.
+portable_remote_commit() {
+  git -C "$PORTABLE_DIR" ls-remote --quiet origin "$@" 2>/dev/null |
+    awk 'END { if (NF) print $1 }'
+}
+
+PORTABLE_APPLIED="$PORTABLE_REF"
 if [ -z "$PORTABLE_SRC" ]; then
   PORTABLE_SRC="$PORTABLE_DIR"
   if [ -d "$PORTABLE_DIR/.git" ]; then
-    if ! (git -C "$PORTABLE_DIR" fetch --quiet --depth 1 origin "$PORTABLE_REF" &&
+    have=$(git -C "$PORTABLE_DIR" rev-parse --verify --quiet HEAD || true)
+    want=$(portable_remote_commit \
+      "refs/tags/$PORTABLE_REF" "refs/tags/$PORTABLE_REF^{}" "refs/heads/$PORTABLE_REF")
+    if [ -z "$want" ]; then
+      log_warn "could not resolve $PORTABLE_REF from origin — using the installed copy"
+      PORTABLE_APPLIED="installed copy"
+    elif [ "$have" = "$want" ]; then
+      log_detail "portable layer already at $PORTABLE_REF"
+    elif [ "${DOTFILES_PORTABLE_ALLOW_DOWNGRADE:-0}" != 1 ] &&
+      [ "$have" = "$(portable_remote_commit HEAD)" ]; then
+      PORTABLE_APPLIED="main"
+      log_warn "not moving the portable layer to $PORTABLE_REF: this checkout follows main"
+      log_detail "/d is the entry point that moves it; set DOTFILES_PORTABLE_ALLOW_DOWNGRADE=1 to force the tag"
+    elif ! (git -C "$PORTABLE_DIR" fetch --quiet --depth 1 origin "$PORTABLE_REF" &&
       git -C "$PORTABLE_DIR" checkout --quiet --force FETCH_HEAD); then
       log_warn "could not update the portable layer to $PORTABLE_REF — using the installed copy"
+      PORTABLE_APPLIED="installed copy"
     fi
   elif ! git clone --quiet --depth 1 --branch "$PORTABLE_REF" "$PORTABLE_REPO" "$PORTABLE_DIR"; then
     PORTABLE_SRC=""
@@ -204,7 +229,7 @@ if [ -d "$PORTABLE_SRC" ] && [ -f "$PORTABLE_SRC/dot_zshrc" ]; then
   # exact — nothing to "fix".
   log_detail "chezmoi may warn that the config template changed — this source has none by design"
   if chezmoi --source "$PORTABLE_SRC" apply; then
-    log_pass "Portable dotfiles applied ($PORTABLE_REF)"
+    log_pass "Portable dotfiles applied ($PORTABLE_APPLIED)"
   else
     log_fail "applying the portable layer failed"
   fi

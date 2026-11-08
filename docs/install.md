@@ -36,6 +36,12 @@ git clone https://github.com/ismail-bahloul/dotfiles-machine.git ~/dotfiles-mach
 `DOTFILES_PORTABLE_SRC=/path/to/dotfiles` uses a local userspace checkout
 instead of the pinned clone.
 
+A userspace checkout that sits on `main` is left alone: `install.sh` never
+moves it back to the pinned tag, because `/d` follows `main` and rewinding it
+here would undo a `/d` run. Bump `DOTFILES_PORTABLE_REF` to move the pin
+forward, or set `DOTFILES_PORTABLE_ALLOW_DOWNGRADE=1` to force a checkout back
+to the tag.
+
 ## [multilib]
 
 A stock **Arch** needs `[multilib]` enabled in `/etc/pacman.conf` (`pacman -Sy`
