@@ -18,6 +18,18 @@ mv ~/.local/share/chezmoi ~/.local/share/chezmoi.bak
 ln -s ~/DATA/05_Code/Projects/dotfiles ~/.local/share/chezmoi
 ```
 
+`~/dotfiles` — the path the README's bootstrap block clones to — is a symlink to
+the same repository on the development machine, for the same reason: a real
+second clone would only lag behind and run a stale `install.sh`.
+
+```bash
+ln -s ~/DATA/05_Code/Projects/dotfiles ~/dotfiles
+```
+
+A fresh machine keeps real clones at both paths: `bootstrap.sh` needs
+`~/dotfiles` to run `install.sh`, and `install.sh` then lets chezmoi clone its
+source at `~/.local/share/chezmoi`.
+
 ## Repository map
 
 ```
@@ -68,7 +80,7 @@ dotfiles/
 ├── dot_config/create_*                # created only if absent (Plasma/Kate own them afterwards)
 │   └── plasma-*.appletsrc             # panel/widgets layout (volatile → apply once)
 ├── dot_config/
-│   ├── gh/                           # GitHub CLI config
+│   ├── gh/config.yml                 # GitHub CLI (hosts.yml is local: token)
 │   ├── kitty/kitty.conf               # terminal (includes theme-wallpaper.conf)
 │   ├── btop/btop.conf                 # system monitor (color_theme = materialyou)
 │   ├── pipewire/pipewire.conf.d/      # PipeWire: global quantum + proprietary RME mode (TuxMix)
