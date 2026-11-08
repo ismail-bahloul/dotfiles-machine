@@ -16,7 +16,11 @@
 #   - appletsrc   -> create_ prefix (deployed only on a fresh install)
 #
 # Files versioned because stable (edited via the UI, re-committed after
-# changes): kwinrulesrc, kxkbrc, katerc, dolphinrc, konsolerc
+# changes): kwinrulesrc, kxkbrc, dolphinrc, konsolerc
+#
+# katerc is a create_ seed, not a versioned copy: Kate rewrites [MainWindow]
+# at runtime. Do not `chezmoi add ~/.config/katerc` — that replaces
+# create_katerc and drops the create_ attribute (see docs/notes.md).
 #
 # Not versioned: kglobalshortcutsrc. Plasma owns it and rewrites it whenever a
 # shortcut changes, so a copy in the repo only drifts (it had to be resynced by

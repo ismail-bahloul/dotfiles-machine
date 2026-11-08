@@ -6,8 +6,15 @@ everything here is interesting to read — this is the stuff that bites.
 ## Versioned vs non-versioned config
 
 Only the **stable** KDE `.rc` files are versioned (`kwinrulesrc`, `kxkbrc`,
-`katerc`, `dolphinrc`, `konsolerc`). After a change made through the UI, run
-another `chezmoi add`.
+`dolphinrc`, `konsolerc`). After a change made through the UI, run another
+`chezmoi add`.
+
+`katerc` is the exception: it is versioned as `dot_config/create_katerc`, i.e.
+deployed **only when the file is absent**. Kate rewrites `[MainWindow]` (window
+geometry, per screen) at runtime, so a normal versioned copy would be clobbered
+on every `chezmoi apply`. Do **not** run `chezmoi add ~/.config/katerc`: it
+replaces `create_katerc` with `dot_config/katerc` and silently drops the
+`create_` attribute. Edit the seed by hand if the fresh-install defaults matter.
 
 `kdeglobals`, `kwinrc` **and `kglobalshortcutsrc`** are **deliberately not
 versioned**: they are rewritten at runtime (by Plasma, and by
@@ -18,7 +25,9 @@ and had to be resynced by hand twice — shortcuts are now edited in System
 Settings and left to Plasma.
 
 `~/.config/zsh/secrets` is listed in `.chezmoiignore`; it must never be
-committed.
+committed. `~/.config/gh/hosts.yml` is ignored for the same reason: `gh` writes
+its OAuth token there (`gh auth login`), and this repo is public. Only
+`gh/config.yml` is versioned — it carries the `co` alias, nothing secret.
 
 `~/.gitconfig` **is** versioned (`dot_gitconfig`) but without the `[user]`
 identity: this repo is public, so name/email live in `~/.config/git/local`

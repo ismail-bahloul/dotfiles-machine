@@ -20,14 +20,6 @@ Text Font=Hack,10,-1,7,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
 Text Font Features=
 Word Wrap Marker=false
 
-[MainWindow]
-1920x1080 screen: Height=801
-1920x1080 screen: Width=1032
-2 screens: Height=829
-2 screens: Width=1142
-2560x1440 screen: Height=846
-2560x1440 screen: Width=994
-
 [filetree]
 editShade=19,101,76
 listMode=false
