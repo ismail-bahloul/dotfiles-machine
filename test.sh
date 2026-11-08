@@ -78,20 +78,20 @@ log_section "Scripts documented"
 for f in .chezmoiscripts/run_*.sh*; do
   [ -f "$f" ] || continue
   base=$(basename "$f")
-  if grep -qF "$base" README.md; then
+  if grep -rqF "$base" README.md docs; then
     log_pass "$base documented"
   else
-    log_fail "$base is not mentioned in README.md"
+    log_fail "$base is not mentioned in README.md or docs/"
   fi
 done
 
 while IFS= read -r r; do
   if [ -f ".chezmoiscripts/$r" ]; then
-    log_pass "README mentions $r"
+    log_pass "docs mention $r"
   else
-    log_fail "README mentions $r, but .chezmoiscripts/$r does not exist"
+    log_fail "docs mention $r, but .chezmoiscripts/$r does not exist"
   fi
-done < <(grep -oE 'run_(once|onchange)_[0-9]+-[A-Za-z0-9._-]+\.sh(\.tmpl)?' README.md | sort -u)
+done < <(grep -hoE 'run_(once|onchange)_[0-9]+-[A-Za-z0-9._-]+\.sh(\.tmpl)?' README.md docs/*.md | sort -u)
 
 # ─── Package registry ────────────────────────────────────────────────────────
 # One <component>.pacman per component is the rule (it may hold no package when
@@ -143,10 +143,10 @@ log_section "Components documented"
 
 for f in packages.d/*.pacman; do
   comp=$(basename "$f" .pacman)
-  if grep -qF "\`$comp\`" README.md; then
+  if grep -rqF "\`$comp\`" README.md docs; then
     log_pass "$comp documented"
   else
-    log_fail "$comp is not documented in README.md"
+    log_fail "$comp is not documented in README.md or docs/"
   fi
 done
 

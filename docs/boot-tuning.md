@@ -1,7 +1,7 @@
 # Boot tuning
 
 On this machine (HP OMEN 15-en1xxx). Everything below except the UEFI boot order
-lives under `/etc` and is applied by `run_once_11-boot-tuning.sh`; the boot order
+lives under `/etc` and is applied by `run_once_11-boot-tuning.sh.tmpl`; the boot order
 is machine state (NVRAM), not something a dotfiles repo can version.
 
 > A note on numbers: `systemd-analyze`'s *firmware* phase counts from power-on,
