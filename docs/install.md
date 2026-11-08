@@ -30,7 +30,7 @@ git clone https://github.com/ismail-bahloul/dotfiles-machine.git ~/dotfiles-mach
 
 1. checks Arch/CachyOS, non-root and network, then installs `paru` + `chezmoi`
 2. `chezmoi init --apply` (or `chezmoi update --apply`) for this repository
-3. applies the userspace layer at `DOTFILES_PORTABLE_REF` (`v1.0.2`)
+3. applies the userspace layer at `DOTFILES_PORTABLE_REF` (`v1.0.3`)
 4. runs `validate.sh` on a fresh install, or with `--validate`
 
 `DOTFILES_PORTABLE_SRC=/path/to/dotfiles` uses a local userspace checkout
