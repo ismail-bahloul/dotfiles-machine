@@ -14,13 +14,13 @@ Material You → `on_change_hook` (`kitty-material-you-hook.sh`) **delegates to
 `material-you-refresh`** (kitty + btop + Zed + Zen + prompt cache) → kitty reloads
 (`pkill -USR1`).
 
-**kitty tab bar**: `powerline` style (set in `kitty.conf`); the generator
+**kitty tab bar**: `powerline` style (set in the portable `kitty.conf`); the generator
 emits `active_tab_background` = accent and `inactive_tab_background` = an
 accent-tinted surface, so the bottom tabs follow the wallpaper as well.
 
 **p10k prompt + `ls`**: `prompt.py` writes `~/.cache/material-you/prompt.zsh`
 (accent `~`/`❯` **and** `LS_COLORS` with truecolor values from the same palette),
-which `.zshrc` sources at startup and in `precmd` → the prompt, `ls` (via the
+which `~/.config/zsh/machine.zsh` sources at startup and in `precmd` → the prompt, `ls` (via the
 `ls/la/l` aliases) and the zsh completion list all follow the wallpaper, and are
 refreshed on every change. **No process launched on every prompt** (previously:
 2 `awk` per prompt).

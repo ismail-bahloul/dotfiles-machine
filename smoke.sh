@@ -19,6 +19,9 @@ setup() {
   mkdir -p "$d/bin" "$d/repo/lib"
   cp "$SRC/install.sh" "$d/repo/"
   cp "$SRC/lib/logging.sh" "$d/repo/lib/"
+  # install.sh applies the portable layer as its last step; without a copy it
+  # would log a warning and change the expected summaries below.
+  cp -r "$SRC/portable" "$d/repo/"
   printf '#!/bin/bash\necho "  v stub validate"\nexit %s\n' "$vrc" >"$d/repo/validate.sh"
 
   cat >"$d/chezmoi.stub" <<'EOF'

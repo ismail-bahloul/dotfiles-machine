@@ -26,15 +26,22 @@ second clone would only lag behind and run a stale `install.sh`.
 ln -s ~/DATA/05_Code/Projects/dotfiles ~/dotfiles
 ```
 
-A fresh machine keeps real clones at both paths: `bootstrap.sh` needs
+A fresh machine keeps real clones at both paths: `bootstrap-machine.sh` needs
 `~/dotfiles` to run `install.sh`, and `install.sh` then lets chezmoi clone its
 source at `~/.local/share/chezmoi`.
+
+The portable layer bypasses that second path: `bootstrap.sh` and
+`portable/README.md` apply `portable/` straight from the clone with
+`chezmoi --source`, so a machine that only wants the userspace config never
+creates `~/.local/share/chezmoi`.
 
 ## Repository map
 
 ```
 dotfiles/
-├── install.sh                        # bootstrap (paru + chezmoi + apply, --dry-run)
+├── bootstrap.sh                      # userspace entry point (any distro) → portable/
+├── bootstrap-machine.sh              # machine entry point (Arch/CachyOS) → install.sh
+├── install.sh                        # machine bootstrap (paru + chezmoi + apply, --dry-run)
 ├── validate.sh                       # post-install verification script
 ├── test.sh                           # pre-push lint of the repo (bash -n, JSON, untracked)
 ├── smoke.sh                          # offline test of install.sh's branches (fake chezmoi)
@@ -65,9 +72,11 @@ dotfiles/
 │   ├── audio-apps.{pacman,aur}       # REAPER, plugins
 │   ├── creative.{pacman,aur}         # Blender, OBS, upscayl, shutter-encoder
 │   └── misc-apps.{pacman,aur}        # obsidian, localsend, vesktop…
-├── dot_zshrc                         # zsh: p10k + plugins with guards (no distro config package)
+├── portable/                         # userspace core for any distro (own chezmoi source)
+│   ├── dot_zshrc                     # shared zsh; sources ~/.config/zsh/machine.zsh if present
+│   ├── dot_gitconfig                 # identity stays in ~/.config/git/local
+│   └── dot_config/{kitty,gh}/        # kitty.conf globincludes local.conf; gh is plain
 ├── dot_p10k.zsh                      # p10k prompt config (regenerate: `p10k configure` + `chezmoi add`)
-├── dot_gitconfig                     # git config: credential helpers + aliases (identity = untracked ~/.config/git/local)
 ├── etc/                              # system files (units, udev, initcpio, tmpfiles, sysctl, logid)
 │   ├── initcpio/install/no-nouveau    # mkinitcpio hook: drop nouveau + GSP fw
 │   └── mkinitcpio.conf.d/20-no-nouveau.conf
@@ -80,9 +89,9 @@ dotfiles/
 ├── dot_config/create_*                # created only if absent (Plasma/Kate own them afterwards)
 │   └── plasma-*.appletsrc             # panel/widgets layout (volatile → apply once)
 ├── dot_config/
-│   ├── gh/config.yml                 # GitHub CLI (hosts.yml is local: token)
-│   ├── kitty/kitty.conf               # terminal (includes theme-wallpaper.conf)
-│   ├── btop/btop.conf                 # system monitor (color_theme = materialyou)
+│   ├── zsh/machine.zsh               # machine fragment sourced by the portable .zshrc
+│   ├── kitty/local.conf              # globincluded by the portable kitty.conf (theme)
+│   ├── btop/btop.conf                 # no include mechanism → machine-owned outright
 │   ├── pipewire/pipewire.conf.d/      # PipeWire: global quantum + proprietary RME mode (TuxMix)
 │   ├── wireplumber/wireplumber.conf.d/# WirePlumber: per-interface RME (CC) rules + Ryzen onboard
 │   └── *.rc                           # KDE config STABLE only (kwin rules, kate/dolphin/konsole)

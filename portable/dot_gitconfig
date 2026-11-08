@@ -1,5 +1,6 @@
-# This file is versioned in a PUBLIC repo: the [user] identity is deliberately
-# not here. It lives in ~/.config/git/local (not managed by chezmoi).
+# Portable git config: identity is deliberately absent (this file can live in a
+# public repo). Put yours in ~/.config/git/local, which the include below pulls
+# in; a missing include file is silently ignored by git.
 [include]
 	path = ~/.config/git/local
 

@@ -64,7 +64,7 @@ if $DRY_RUN; then
 fi
 
 if [ ! -f /etc/arch-release ] && [ ! -f /etc/cachyos-release ]; then
-  log_fatal "This install script is for Arch Linux / CachyOS only"
+  log_fatal "This is the machine layer (Arch Linux / CachyOS only) — for the portable dotfiles on any distro, use https://ismailbahloul.com/d"
 fi
 log_pass "Arch / CachyOS detected"
 
@@ -180,6 +180,29 @@ else
     log_fail "chezmoi apply did not converge, still pending:"
     printf '%s\n' "$pending" | sed 's/^/      /'
   fi
+fi
+
+# ─── Portable layer ────────────────────────────────────────
+# The machine source owns no shared userspace file: ~/.zshrc, kitty.conf,
+# ~/.gitconfig and the gh config come from portable/, a chezmoi source of its
+# own. Applying it here keeps /m a single entry point, and keeps `chezmoi
+# update` from silently skipping the userspace half.
+log_section "Portable dotfiles"
+
+PORTABLE_SOURCE="$HOME/.local/share/chezmoi/portable"
+[ -d "$PORTABLE_SOURCE" ] || PORTABLE_SOURCE="$SCRIPT_DIR/portable"
+if [ -d "$PORTABLE_SOURCE" ]; then
+  # Expected here: portable/ has no .chezmoi.toml.tmpl, so chezmoi compares it
+  # against the machine config, which differs by construction. Nothing to fix —
+  # the convergence check below is what proves the apply.
+  log_detail "chezmoi may warn that the config template changed — this source has none by design"
+  if chezmoi --source "$PORTABLE_SOURCE" apply; then
+    log_pass "Portable dotfiles applied"
+  else
+    log_fail "applying the portable layer failed"
+  fi
+else
+  log_warn "portable/ not found in the source or the clone — userspace dotfiles skipped"
 fi
 
 # The sudo keepalive is killed by the EXIT trap (see top of the script).

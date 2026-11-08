@@ -10,6 +10,11 @@ packages.d
 
 # Opt-in application bundles (bricks/install), never installed by chezmoi
 bricks
+
+# Portable userspace core: its own chezmoi source dir (see portable/README.md).
+# Ignored here so the machine source never deploys it under ~/portable;
+# install.sh applies it as a second source after the machine layer.
+portable
 README.md
 LICENSE
 validate.sh
@@ -17,6 +22,7 @@ install.sh
 test.sh
 smoke.sh
 bootstrap.sh
+bootstrap-machine.sh
 
 # Shell libraries sourced by install.sh / validate.sh / .chezmoiscripts/*
 lib

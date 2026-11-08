@@ -245,7 +245,7 @@ done
 # ─── Shell syntax ───────────────────────────────────────────────────────────
 log_section "Shell syntax"
 
-for f in install.sh validate.sh smoke.sh bootstrap.sh .chezmoiscripts/run_once_*.sh* .chezmoiscripts/run_onchange_*.sh*; do
+for f in install.sh validate.sh smoke.sh bootstrap.sh bootstrap-machine.sh .chezmoiscripts/run_once_*.sh* .chezmoiscripts/run_onchange_*.sh*; do
   # .tmpl scripts carry a chezmoi hash line: render them before the syntax check
   case "$f" in
     *.tmpl) check() { ( set -o pipefail; chezmoi -S "$PWD" execute-template < "$f" | bash -n ); } ;;
@@ -268,6 +268,44 @@ for f in dot_local/bin/executable_limine-boot-* dot_local/bin/executable_omenctl
     fi
   fi
 done
+
+# ─── Portable layer ────────────────────────────────────
+# portable/ is what bootstrap.sh applies, and it is zsh: `bash -n` cannot check
+# it. This lint only guards the entry point and the ignore file; the layer is
+# applied for real in a container, not here.
+log_section "Portable layer"
+
+if [ -f portable/dot_zshrc ]; then
+  if ! command -v zsh >/dev/null 2>&1; then
+    log_skip "portable/dot_zshrc (zsh not installed, syntax unchecked)"
+  elif zsh -n portable/dot_zshrc; then
+    log_pass "portable/dot_zshrc (zsh -n)"
+  else
+    log_fail "portable/dot_zshrc syntax error"
+  fi
+else
+  log_fail "portable/dot_zshrc missing"
+fi
+
+# The README sits next to a valid chezmoi source: without this line, an apply
+# from portable/ would drop it into ~/README.md.
+if [ -f portable/.chezmoiignore ] && grep -qxF README.md portable/.chezmoiignore; then
+  log_pass "portable/.chezmoiignore ignores README.md"
+else
+  log_fail "portable/.chezmoiignore does not ignore README.md"
+fi
+
+# The two sources must not own the same target. The machine layer *extends* the
+# portable one through ~/.config/zsh/machine.zsh and ~/.config/kitty/local.conf;
+# an overlap means an apply of one silently fights the other.
+overlap=$(comm -12 \
+  <(chezmoi --source portable managed --include files 2>/dev/null | sort) \
+  <(chezmoi --source "$PWD" managed --include files 2>/dev/null | sort) || true)
+if [ -z "$overlap" ]; then
+  log_pass "portable/ and the machine source share no target"
+else
+  log_fail "targets managed by both sources: $(printf '%s ' $overlap)"
+fi
 
 # ─── JSON ───────────────────────────────────────────────────────────────────
 log_section "JSON"

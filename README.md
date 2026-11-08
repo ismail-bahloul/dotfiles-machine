@@ -7,28 +7,57 @@
 A reproducible **CachyOS** (Arch) laptop setup managed with
 [chezmoi](https://chezmoi.io): KDE Plasma 6 on Wayland, dual-boot with Windows 11,
 GPU passthrough (VFIO) for a Windows VM, a PipeWire pro-audio chain, fan/power
-management and a slimmed initramfs.
+management and a slimmed initramfs. The same repository carries a **portable
+userspace layer** (`portable/`) that installs on any Linux distribution.
 
 Repository map: [`docs/setup.md`](docs/setup.md). The measurements behind the
 non-obvious choices: [`docs/`](docs/).
 
 ## Install
 
-One line, always the latest `main`:
+Two entry points, one repository.
+
+### Userspace dotfiles — any Linux
+
+`~/.zshrc`, kitty, btop, git, gh. No root beyond the `chezmoi` package, no
+system file, no package list.
 
 ```bash
 curl -fsSL https://ismailbahloul.com/d | bash
 ```
 
-`ismailbahloul.com/d` redirects to [`bootstrap.sh`](bootstrap.sh) in this repo.
-Drop the pipe (`curl -fsSL https://ismailbahloul.com/d`) to read it first.
-`--dry-run` and `--validate` are forwarded:
+`/d` redirects to [`bootstrap.sh`](bootstrap.sh). Drop the pipe
+(`curl -fsSL https://ismailbahloul.com/d`) to read it first. `--dry-run` shows
+the plan; `--force` is required to overwrite a config that already exists, or to
+apply on a host already provisioned by the machine layer:
 
 ```bash
 curl -fsSL https://ismailbahloul.com/d | bash -s -- --dry-run
 ```
 
-Or clone and run it locally:
+Details: [`portable/README.md`](portable/README.md).
+
+### The full machine — CachyOS / Arch only
+
+Drivers, KDE Plasma, VFIO, the PipeWire chain, initramfs and udev overrides.
+
+```bash
+curl -fsSL https://ismailbahloul.com/m | bash
+```
+
+`/m` redirects to [`bootstrap-machine.sh`](bootstrap-machine.sh), which clones
+the repo and hands over to `install.sh`. `--dry-run` and `--validate` are
+forwarded:
+
+```bash
+curl -fsSL https://ismailbahloul.com/m | bash -s -- --dry-run
+```
+
+On a non-Arch host it stops before cloning and points at `/d`.
+
+### From a clone
+
+Machine layer:
 
 ```bash
 [ -d ~/dotfiles/.git ] || git clone https://github.com/ismail-bahloul/dotfiles.git ~/dotfiles
@@ -36,11 +65,21 @@ git -C ~/dotfiles pull --ff-only
 ~/dotfiles/install.sh
 ```
 
+Portable layer only — the same file the `/d` endpoint serves:
+
+```bash
+~/dotfiles/bootstrap.sh
+```
+
 To update a machine that is already set up:
 
 ```bash
-chezmoi update --apply
+~/dotfiles/install.sh
 ```
+
+It runs `chezmoi update --apply` for the machine layer, then applies
+`portable/` for the userspace layer, so the two cannot drift apart. A bare
+`chezmoi update --apply` only covers the machine half.
 
 SSH works too: `git@github.com:ismail-bahloul/dotfiles.git`.
 
@@ -55,7 +94,7 @@ command (and the parentheses in the text break the parse).
 
 | Command | What it does |
 |---|---|
-| `~/dotfiles/install.sh --dry-run` | prerequisites only, nothing is changed |
+| `~/dotfiles/install.sh --dry-run` | machine prerequisites only, nothing is changed |
 | `~/dotfiles/install.sh --validate` | + full machine audit (`validate.sh`) |
 | `~/dotfiles/smoke.sh` | `install.sh`'s branches, offline (fake chezmoi, no sudo) |
 | `~/dotfiles/test.sh` | repo lint, run before pushing |
@@ -142,6 +181,7 @@ chezmoi sees an unchanged script and never redeploys. `pkg-hash:` in
 | [`docs/material-you.md`](docs/material-you.md) | wallpaper-driven theming, KWin transparency/blur |
 | [`docs/notes.md`](docs/notes.md) | versioned vs. not, PipeWire, SSH keys |
 | [`bricks/README.md`](bricks/README.md) | opt-in application bundles |
+| [`portable/README.md`](portable/README.md) | the userspace core (zsh, kitty, btop, git, gh) that runs on any distro |
 
 ## License
 
