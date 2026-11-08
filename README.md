@@ -14,6 +14,22 @@ non-obvious choices: [`docs/`](docs/).
 
 ## Install
 
+One line, always the latest `main`:
+
+```bash
+curl -fsSL https://ismailbahloul.com/d | bash
+```
+
+`ismailbahloul.com/d` redirects to [`bootstrap.sh`](bootstrap.sh) in this repo.
+Drop the pipe (`curl -fsSL https://ismailbahloul.com/d`) to read it first.
+`--dry-run` and `--validate` are forwarded:
+
+```bash
+curl -fsSL https://ismailbahloul.com/d | bash -s -- --dry-run
+```
+
+Or clone and run it locally:
+
 ```bash
 [ -d ~/dotfiles/.git ] || git clone https://github.com/ismail-bahloul/dotfiles.git ~/dotfiles
 git -C ~/dotfiles pull --ff-only
