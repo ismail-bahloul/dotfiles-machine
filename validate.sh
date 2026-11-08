@@ -258,6 +258,38 @@ else
   log_warn "MAX_SNAPSHOT_ENTRIES=${SNAP_MAX:-unset} (expected 8)"
 fi
 
+# The systemd-user-sessions override is a full copy of the vendor unit, because
+# an empty After= in a drop-in does not reset the list (systemd 262). Its only
+# intended delta is dropping network.target, so anything else that differs means
+# the copy went stale behind a systemd update: report it instead of keeping a
+# silently outdated unit.
+VENDOR_UNIT=/usr/lib/systemd/system/systemd-user-sessions.service
+OVERRIDE_UNIT="$SCRIPT_DIR/etc/systemd/system/systemd-user-sessions.service"
+if [ ! -f "$VENDOR_UNIT" ]; then
+  log_skip "vendor systemd-user-sessions.service not found"
+elif [ ! -f "$OVERRIDE_UNIT" ]; then
+  log_fail "systemd-user-sessions override missing"
+else
+  sort_words() { tr ' ' '\n' | sed '/^[[:space:]]*$/d' | sort; }
+  unit_body() {
+    grep -v '^[[:space:]]*#' "$1" |
+      sed '/^[[:space:]]*$/d; s/[[:space:]]*$//; s/^After=.*/After=<checked below>/'
+  }
+  vendor_after=$(sed -n 's/^After=//p' "$VENDOR_UNIT" | sort_words)
+  expected_after=$(printf '%s\n' "$vendor_after" | grep -vx 'network.target' || true)
+  ours_after=$(sed -n 's/^After=//p' "$OVERRIDE_UNIT" | sort_words)
+  if [ "$ours_after" != "$expected_after" ]; then
+    log_fail "systemd-user-sessions After= is not 'vendor minus network.target'"
+    log_detail "got:      $(printf '%s' "$ours_after" | tr '\n' ' ')"
+    log_detail "expected: $(printf '%s' "$expected_after" | tr '\n' ' ')"
+  elif diff -q <(unit_body "$VENDOR_UNIT") <(unit_body "$OVERRIDE_UNIT") >/dev/null; then
+    log_pass "systemd-user-sessions override matches the vendor unit (minus network.target)"
+  else
+    log_fail "systemd-user-sessions override drifted from the vendor unit outside After=:"
+    diff -u <(unit_body "$VENDOR_UNIT") <(unit_body "$OVERRIDE_UNIT") | sed -n '3,20p' | sed 's/^/    /' || true
+  fi
+fi
+
 # ─── Sysctl ─────────────────────────────────────────────────────────────────
 log_section "Sysctl"
 
