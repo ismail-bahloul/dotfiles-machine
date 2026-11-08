@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # install.sh — bootstrap dotfiles
-# Usage: git clone git@github.com:ismail-bahloul/dotfiles.git ~/dotfiles
+# Usage: git clone git@github.com:ismail-bahloul/dotfiles-machine.git ~/dotfiles
 #        ~/dotfiles/install.sh         # fresh install (or update if already installed)
 #        ./install.sh --dry-run        # check prerequisites only, no install
 #        ./install.sh --validate       # force validation even on update
@@ -10,8 +10,8 @@ set -e
 
 # ─── Repo + script location ─────────────────────────────────────────────────
 # HTTPS so that no SSH key has to be registered before bootstrapping. Swap in the
-# SSH URL (git@github.com:ismail-bahloul/dotfiles.git) if you prefer.
-REPO_URL="https://github.com/ismail-bahloul/dotfiles.git"
+# SSH URL (git@github.com:ismail-bahloul/dotfiles-machine.git) if you prefer.
+REPO_URL="https://github.com/ismail-bahloul/dotfiles-machine.git"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
 # ─── Cleanup on exit ────────────────────────────────────────────────────────
@@ -175,12 +175,12 @@ fi
 
 # ─── Portable layer ────────────────────────────────────────
 # ─── Portable layer ─────────────────────────────────────────────────────────
-# The userspace layer lives in its own repository (dotfiles-portable) and is
-# applied here from a pinned tag, so /m alone leaves a complete machine and the
-# two layers cannot drift. DOTFILES_PORTABLE_SRC uses a local checkout instead.
+# The userspace layer lives in its own repository (dotfiles) and is applied
+# here from a pinned tag, so /m alone leaves a complete machine and the two
+# layers cannot drift. DOTFILES_PORTABLE_SRC uses a local checkout instead.
 log_section "Portable dotfiles"
 
-PORTABLE_REPO="${DOTFILES_PORTABLE_REPO:-https://github.com/ismail-bahloul/dotfiles-portable.git}"
+PORTABLE_REPO="${DOTFILES_PORTABLE_REPO:-https://github.com/ismail-bahloul/dotfiles.git}"
 PORTABLE_REF="${DOTFILES_PORTABLE_REF:-v1.0.0}"
 PORTABLE_DIR="${DOTFILES_PORTABLE_DIR:-$HOME/.local/share/dotfiles-portable}"
 PORTABLE_SRC="${DOTFILES_PORTABLE_SRC:-}"

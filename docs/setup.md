@@ -30,7 +30,7 @@ A fresh machine keeps real clones at both paths: `bootstrap-machine.sh` needs
 `~/dotfiles` to run `install.sh`, and `install.sh` then lets chezmoi clone its
 source at `~/.local/share/chezmoi`.
 
-The userspace layer is a **separate repository** (`dotfiles-portable`). `/d`
+The userspace layer is a **separate repository** (`dotfiles`). `/d`
 clones it at `~/.local/share/dotfiles-portable` and applies it with
 `chezmoi --source`, which is why a userspace-only machine never creates
 `~/.local/share/chezmoi`. `install.sh` applies the same repository from a pinned

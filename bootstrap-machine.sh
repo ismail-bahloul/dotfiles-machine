@@ -17,7 +17,7 @@
 # =============================================================================
 set -euo pipefail
 
-REPO="${DOTFILES_REPO:-https://github.com/ismail-bahloul/dotfiles.git}"
+REPO="${DOTFILES_REPO:-https://github.com/ismail-bahloul/dotfiles-machine.git}"
 DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
 
 # Fail before the clone: this layer writes /etc, systemd units and an initramfs,

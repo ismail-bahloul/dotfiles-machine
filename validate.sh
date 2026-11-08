@@ -387,7 +387,7 @@ fi
 # ─── Git ────────────────────────────────────────────────────────────────────
 log_section "Git"
 
-if cd "$SCRIPT_DIR" 2>/dev/null && git remote -v 2>/dev/null | grep -q "ismail-bahloul/dotfiles"; then
+if cd "$SCRIPT_DIR" 2>/dev/null && git remote -v 2>/dev/null | grep -q "ismail-bahloul/dotfiles-machine"; then
   log_pass "Dotfiles remote OK"
 else
   log_fail "Dotfiles remote not found"

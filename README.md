@@ -1,4 +1,4 @@
-# My Dotfiles
+# dotfiles-machine
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Platform: Arch Linux](https://img.shields.io/badge/Platform-Arch_Linux-1793D1.svg)
@@ -8,7 +8,7 @@ A reproducible **CachyOS** (Arch) laptop setup managed with
 [chezmoi](https://chezmoi.io): KDE Plasma 6 on Wayland, dual-boot with Windows 11,
 GPU passthrough (VFIO) for a Windows VM, a PipeWire pro-audio chain, fan/power
 management and a slimmed initramfs. The userspace layer — zsh, kitty, git, gh —
-lives in its own repository, [`dotfiles-portable`](https://github.com/ismail-bahloul/dotfiles-portable),
+lives in its own repository, [`dotfiles`](https://github.com/ismail-bahloul/dotfiles),
 and installs on any Linux distribution; this repo applies it at a pinned tag.
 
 Repository map: [`docs/setup.md`](docs/setup.md). The measurements behind the
@@ -36,7 +36,7 @@ apply on a host already provisioned by the machine layer:
 curl -fsSL https://ismailbahloul.com/d | bash -s -- --dry-run
 ```
 
-Details: [`dotfiles-portable`](https://github.com/ismail-bahloul/dotfiles-portable).
+Details: [`dotfiles`](https://github.com/ismail-bahloul/dotfiles).
 
 ### The full machine — CachyOS / Arch only
 
@@ -61,7 +61,7 @@ On a non-Arch host it stops before cloning and points at `/d`.
 Machine layer:
 
 ```bash
-[ -d ~/dotfiles/.git ] || git clone https://github.com/ismail-bahloul/dotfiles.git ~/dotfiles
+[ -d ~/dotfiles/.git ] || git clone https://github.com/ismail-bahloul/dotfiles-machine.git ~/dotfiles
 git -C ~/dotfiles pull --ff-only
 ~/dotfiles/install.sh
 ```
@@ -69,7 +69,7 @@ git -C ~/dotfiles pull --ff-only
 Portable layer only — a separate repository, installed by its own bootstrap:
 
 ```bash
-[ -d ~/dotfiles-portable/.git ] || git clone https://github.com/ismail-bahloul/dotfiles-portable.git ~/dotfiles-portable
+[ -d ~/dotfiles-portable/.git ] || git clone https://github.com/ismail-bahloul/dotfiles.git ~/dotfiles-portable
 ~/dotfiles-portable/bootstrap.sh
 ```
 
@@ -83,7 +83,7 @@ It runs `chezmoi update --apply` for the machine layer, then applies the userspa
 layer from its pinned tag, so the two cannot drift apart. A bare
 `chezmoi update --apply` only covers the machine half.
 
-SSH works too: `git@github.com:ismail-bahloul/dotfiles.git`.
+SSH works too: `git@github.com:ismail-bahloul/dotfiles-machine.git`.
 
 A stock **Arch** needs `[multilib]` enabled in `/etc/pacman.conf` (`pacman -Sy`
 afterwards): the 32-bit Wine/Steam/NVIDIA/Mesa packages live there. CachyOS
@@ -184,7 +184,7 @@ chezmoi sees an unchanged script and never redeploys. `pkg-hash:` in
 | [`docs/material-you.md`](docs/material-you.md) | wallpaper-driven theming, KWin transparency/blur |
 | [`docs/notes.md`](docs/notes.md) | versioned vs. not, PipeWire, SSH keys |
 | [`bricks/README.md`](bricks/README.md) | opt-in application bundles |
-| [`dotfiles-portable`](https://github.com/ismail-bahloul/dotfiles-portable) | the userspace layer (zsh, kitty, git, gh) |
+| [`dotfiles`](https://github.com/ismail-bahloul/dotfiles) | the userspace layer (zsh, kitty, git, gh) |
 
 ## License
 

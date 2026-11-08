@@ -1,7 +1,7 @@
 #!/bin/bash
 # Offline smoke test of the entry points' control flow: install.sh and
 # bootstrap-machine.sh. The userspace bootstrap is tested in its own repository
-# (dotfiles-portable/test.sh).
+# (dotfiles/test.sh).
 # No network, no sudo, no package manager: chezmoi/paru/sudo/pacman/git/curl are
 # fakes on PATH, HOME is a throwaway, and the repo scripts are copied to a temp
 # dir. The two modes mirror install.sh's own auto-detection:
@@ -103,7 +103,7 @@ FAKE_INIT_RC=1 run_case fresh-apply-fails 1 "✘ 1 CHECK(S) FAILED" 0 "" fresh
 # bootstrap-machine.sh — control flow (offline)
 #
 # The userspace bootstrap and its cases live with the userspace repository
-# (dotfiles-portable/test.sh). /etc/arch-release cannot be hidden from a test,
+# (dotfiles/test.sh). /etc/arch-release cannot be hidden from a test,
 # so the non-Arch case runs from a copy with only that path rewritten.
 # ─────────────────────────────────────────────────────────────────────────────
 echo ""
