@@ -181,7 +181,7 @@ fi
 log_section "Portable dotfiles"
 
 PORTABLE_REPO="${DOTFILES_PORTABLE_REPO:-https://github.com/ismail-bahloul/dotfiles.git}"
-PORTABLE_REF="${DOTFILES_PORTABLE_REF:-v1.0.0}"
+PORTABLE_REF="${DOTFILES_PORTABLE_REF:-v1.0.1}"
 PORTABLE_DIR="${DOTFILES_PORTABLE_DIR:-$HOME/.local/share/dotfiles-portable}"
 PORTABLE_SRC="${DOTFILES_PORTABLE_SRC:-}"
 

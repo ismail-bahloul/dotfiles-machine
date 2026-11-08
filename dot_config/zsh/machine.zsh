@@ -16,7 +16,11 @@ _prompt_material() {
   [[ -n $LS_COLORS ]] && zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 }
 _prompt_material
-[[ " ${precmd_functions[*]} " == *" _prompt_material "* ]] || precmd_functions+=(_prompt_material)
+# Prepend, not append: p10k computes the prompt in _p9k_precmd, so sourcing
+# the colors before it makes them apply to the prompt being drawn right now
+# instead of the next one.
+[[ " ${precmd_functions[*]} " == *" _prompt_material "* ]] ||
+  precmd_functions=(_prompt_material $precmd_functions)
 
 alias material-refresh='$HOME/.local/bin/material-you-refresh'
 
