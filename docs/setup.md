@@ -39,7 +39,7 @@ The userspace layer is a **separate repository** (`dotfiles`). `/d`
 clones it at `~/.local/share/dotfiles-portable` and applies it with
 `chezmoi --source`, which is why a userspace-only machine never creates
 `~/.local/share/chezmoi`. `install.sh` applies the same repository from a pinned
-tag (`DOTFILES_PORTABLE_REF`, `v1.0.3`) into the same directory, and
+tag (`DOTFILES_PORTABLE_REF`, `v1.0.4`) into the same directory, and
 `DOTFILES_PORTABLE_SRC=/path/to/checkout` short-circuits the fetch.
 
 ## Repository map
