@@ -1,4 +1,0 @@
-# Repo-only file: this directory is a chezmoi source of its own, so anything that
-# must not be deployed to ~ has to be listed here (the main .chezmoiignore does
-# not apply when this directory is used as the source).
-README.md

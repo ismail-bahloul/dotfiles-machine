@@ -30,21 +30,22 @@ A fresh machine keeps real clones at both paths: `bootstrap-machine.sh` needs
 `~/dotfiles` to run `install.sh`, and `install.sh` then lets chezmoi clone its
 source at `~/.local/share/chezmoi`.
 
-The portable layer bypasses that second path: `bootstrap.sh` and
-`portable/README.md` apply `portable/` straight from the clone with
-`chezmoi --source`, so a machine that only wants the userspace config never
-creates `~/.local/share/chezmoi`.
+The userspace layer is a **separate repository** (`dotfiles-portable`). `/d`
+clones it at `~/.local/share/dotfiles-portable` and applies it with
+`chezmoi --source`, which is why a userspace-only machine never creates
+`~/.local/share/chezmoi`. `install.sh` applies the same repository from a pinned
+tag (`DOTFILES_PORTABLE_REF`, `v1.0.0`) into the same directory, and
+`DOTFILES_PORTABLE_SRC=/path/to/checkout` short-circuits the fetch.
 
 ## Repository map
 
 ```
 dotfiles/
-├── bootstrap.sh                      # userspace entry point (any distro) → portable/
 ├── bootstrap-machine.sh              # machine entry point (Arch/CachyOS) → install.sh
-├── install.sh                        # machine bootstrap (paru + chezmoi + apply, --dry-run)
+├── install.sh                        # machine bootstrap (paru + chezmoi + apply, + portable layer)
 ├── validate.sh                       # post-install verification script
 ├── test.sh                           # pre-push lint of the repo (bash -n, JSON, untracked)
-├── smoke.sh                          # offline test of the three entry points (fake chezmoi/pacman)
+├── smoke.sh                          # offline test of install.sh and bootstrap-machine.sh
 ├── .chezmoiscripts/                   # scripts run by chezmoi, never deployed
 │   ├── run_once_01-packages.sh.tmpl      # base + enabled components (packages.d/)
 │   ├── run_once_02-wine-staging.sh.tmpl  # wine-staging runner (optional: "wine" component)
@@ -73,10 +74,6 @@ dotfiles/
 │   ├── audio-apps.{pacman,aur}       # REAPER, plugins
 │   ├── creative.{pacman,aur}         # Blender, OBS, upscayl, shutter-encoder
 │   └── misc-apps.{pacman,aur}        # obsidian, localsend, vesktop…
-├── portable/                         # userspace core for any distro (own chezmoi source)
-│   ├── dot_zshrc                     # shared zsh; sources ~/.config/zsh/machine.zsh if present
-│   ├── dot_gitconfig                 # identity stays in ~/.config/git/local
-│   └── dot_config/{kitty,gh}/        # kitty.conf globincludes local.conf; gh is plain
 ├── dot_p10k.zsh                      # p10k prompt config (regenerate: `p10k configure` + `chezmoi add`)
 ├── etc/                              # system files (units, udev, initcpio, tmpfiles, sysctl, logid)
 │   ├── initcpio/install/no-nouveau    # mkinitcpio hook: drop nouveau + GSP fw
@@ -105,7 +102,6 @@ dotfiles/
 │   │   ├── omenctl-tui               # desktop launcher wrapper (sudo + terminal)
 │   │   ├── mount-shared              # mount Windows SHARED (NTFS) in rw
 │   │   ├── umount-shared             # unmount SHARED before rebooting to Windows
-│   │   ├── deploy-plugins            # deploy Linux audio plugins (VST3/LV2/CLAP)
 │   │   ├── .add-vfio-entry           # (internal) adds the VFIO entry to limine.conf
 │   │   ├── kitty-material-you-hook.sh# run by kde-material-you-colors → delegates to material-you-refresh
 │   │   └── material-you-refresh      # manual re-sync (safety net)

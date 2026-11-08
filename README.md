@@ -7,8 +7,9 @@
 A reproducible **CachyOS** (Arch) laptop setup managed with
 [chezmoi](https://chezmoi.io): KDE Plasma 6 on Wayland, dual-boot with Windows 11,
 GPU passthrough (VFIO) for a Windows VM, a PipeWire pro-audio chain, fan/power
-management and a slimmed initramfs. The same repository carries a **portable
-userspace layer** (`portable/`) that installs on any Linux distribution.
+management and a slimmed initramfs. The userspace layer — zsh, kitty, git, gh —
+lives in its own repository, [`dotfiles-portable`](https://github.com/ismail-bahloul/dotfiles-portable),
+and installs on any Linux distribution; this repo applies it at a pinned tag.
 
 Repository map: [`docs/setup.md`](docs/setup.md). The measurements behind the
 non-obvious choices: [`docs/`](docs/).
@@ -26,7 +27,7 @@ system file, no package list.
 curl -fsSL https://ismailbahloul.com/d | bash
 ```
 
-`/d` redirects to [`bootstrap.sh`](bootstrap.sh). Drop the pipe
+`/d` redirects to that repository's `bootstrap.sh`. Drop the pipe
 (`curl -fsSL https://ismailbahloul.com/d`) to read it first. `--dry-run` shows
 the plan; `--force` is required to overwrite a config that already exists, or to
 apply on a host already provisioned by the machine layer:
@@ -35,7 +36,7 @@ apply on a host already provisioned by the machine layer:
 curl -fsSL https://ismailbahloul.com/d | bash -s -- --dry-run
 ```
 
-Details: [`portable/README.md`](portable/README.md).
+Details: [`dotfiles-portable`](https://github.com/ismail-bahloul/dotfiles-portable).
 
 ### The full machine — CachyOS / Arch only
 
@@ -65,10 +66,11 @@ git -C ~/dotfiles pull --ff-only
 ~/dotfiles/install.sh
 ```
 
-Portable layer only — the same file the `/d` endpoint serves:
+Portable layer only — a separate repository, installed by its own bootstrap:
 
 ```bash
-~/dotfiles/bootstrap.sh
+[ -d ~/dotfiles-portable/.git ] || git clone https://github.com/ismail-bahloul/dotfiles-portable.git ~/dotfiles-portable
+~/dotfiles-portable/bootstrap.sh
 ```
 
 To update a machine that is already set up:
@@ -77,8 +79,8 @@ To update a machine that is already set up:
 ~/dotfiles/install.sh
 ```
 
-It runs `chezmoi update --apply` for the machine layer, then applies
-`portable/` for the userspace layer, so the two cannot drift apart. A bare
+It runs `chezmoi update --apply` for the machine layer, then applies the userspace
+layer from its pinned tag, so the two cannot drift apart. A bare
 `chezmoi update --apply` only covers the machine half.
 
 SSH works too: `git@github.com:ismail-bahloul/dotfiles.git`.
@@ -182,7 +184,7 @@ chezmoi sees an unchanged script and never redeploys. `pkg-hash:` in
 | [`docs/material-you.md`](docs/material-you.md) | wallpaper-driven theming, KWin transparency/blur |
 | [`docs/notes.md`](docs/notes.md) | versioned vs. not, PipeWire, SSH keys |
 | [`bricks/README.md`](bricks/README.md) | opt-in application bundles |
-| [`portable/README.md`](portable/README.md) | the userspace core (zsh, kitty, btop, git, gh) that runs on any distro |
+| [`dotfiles-portable`](https://github.com/ismail-bahloul/dotfiles-portable) | the userspace layer (zsh, kitty, git, gh) |
 
 ## License
 

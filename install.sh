@@ -24,25 +24,16 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# ─── Load logging library (local clone, else fall back) ─────────────────────
-if [ -f "$SCRIPT_DIR/lib/logging.sh" ]; then
-  # shellcheck source=lib/logging.sh
-  source "$SCRIPT_DIR/lib/logging.sh"
-else
-  # Fallback: minimal logging (e.g. when piped from a URL)
-  LOG_ERR=0 LOG_WARN=0 LOG_UNVALIDATED=0
-  log_init() { :; }
-  log_section() { echo ""; echo "─── $1 ───"; }
-  log_pass() { echo "  ✔ $1"; }
-  log_fail() { LOG_ERR=$((LOG_ERR + 1)); echo "  ✘ $1"; }
-  log_fatal() { echo "  ✘ $1"; exit 1; }
-  log_warn() { LOG_WARN=$((LOG_WARN + 1)); echo "  ! $1"; }
-  log_info() { echo "  → $1"; }
-  log_skip() { echo "  ⋯ $1"; }
-  log_detail() { echo "    • $1"; }
-  log_cmd() { echo "  $ $1"; }
-  log_summary() { :; }
+# ─── Logging helpers ──────────────────────────────────────────────────────
+# lib/logging.sh ships next to this script and is always present: install.sh is
+# only ever run from a clone (bootstrap-machine.sh clones first). No fallback:
+# a missing lib is a broken checkout, not a supported mode.
+if [ ! -f "$SCRIPT_DIR/lib/logging.sh" ]; then
+  echo "install: lib/logging.sh is missing — run this from the repository clone." >&2
+  exit 1
 fi
+# shellcheck source=lib/logging.sh
+source "$SCRIPT_DIR/lib/logging.sh"
 
 # ─── Parse arguments ───────────────────────────────────────────────────────
 DRY_RUN=false
@@ -183,26 +174,43 @@ else
 fi
 
 # ─── Portable layer ────────────────────────────────────────
-# The machine source owns no shared userspace file: ~/.zshrc, kitty.conf,
-# ~/.gitconfig and the gh config come from portable/, a chezmoi source of its
-# own. Applying it here keeps /m a single entry point, and keeps `chezmoi
-# update` from silently skipping the userspace half.
+# ─── Portable layer ─────────────────────────────────────────────────────────
+# The userspace layer lives in its own repository (dotfiles-portable) and is
+# applied here from a pinned tag, so /m alone leaves a complete machine and the
+# two layers cannot drift. DOTFILES_PORTABLE_SRC uses a local checkout instead.
 log_section "Portable dotfiles"
 
-PORTABLE_SOURCE="$HOME/.local/share/chezmoi/portable"
-[ -d "$PORTABLE_SOURCE" ] || PORTABLE_SOURCE="$SCRIPT_DIR/portable"
-if [ -d "$PORTABLE_SOURCE" ]; then
-  # Expected here: portable/ has no .chezmoi.toml.tmpl, so chezmoi compares it
-  # against the machine config, which differs by construction. Nothing to fix —
-  # the convergence check below is what proves the apply.
+PORTABLE_REPO="${DOTFILES_PORTABLE_REPO:-https://github.com/ismail-bahloul/dotfiles-portable.git}"
+PORTABLE_REF="${DOTFILES_PORTABLE_REF:-v1.0.0}"
+PORTABLE_DIR="${DOTFILES_PORTABLE_DIR:-$HOME/.local/share/dotfiles-portable}"
+PORTABLE_SRC="${DOTFILES_PORTABLE_SRC:-}"
+
+if [ -z "$PORTABLE_SRC" ]; then
+  PORTABLE_SRC="$PORTABLE_DIR"
+  if [ -d "$PORTABLE_DIR/.git" ]; then
+    if ! (git -C "$PORTABLE_DIR" fetch --quiet --depth 1 origin "$PORTABLE_REF" &&
+      git -C "$PORTABLE_DIR" checkout --quiet --force FETCH_HEAD); then
+      log_warn "could not update the portable layer to $PORTABLE_REF — using the installed copy"
+    fi
+  elif ! git clone --quiet --depth 1 --branch "$PORTABLE_REF" "$PORTABLE_REPO" "$PORTABLE_DIR"; then
+    PORTABLE_SRC=""
+    log_warn "could not clone the portable layer from $PORTABLE_REPO"
+  fi
+fi
+
+if [ -d "$PORTABLE_SRC" ] && [ -f "$PORTABLE_SRC/dot_zshrc" ]; then
+  # Expected: the portable source has no .chezmoi.toml.tmpl, so chezmoi compares
+  # it against the machine config, which differs by construction. The apply is
+  # exact — nothing to "fix".
   log_detail "chezmoi may warn that the config template changed — this source has none by design"
-  if chezmoi --source "$PORTABLE_SOURCE" apply; then
-    log_pass "Portable dotfiles applied"
+  if chezmoi --source "$PORTABLE_SRC" apply; then
+    log_pass "Portable dotfiles applied ($PORTABLE_REF)"
   else
     log_fail "applying the portable layer failed"
   fi
 else
-  log_warn "portable/ not found in the source or the clone — userspace dotfiles skipped"
+  log_fail "portable layer unavailable ($PORTABLE_REF from $PORTABLE_REPO)"
+  log_detail "check the network, or set DOTFILES_PORTABLE_SRC=/path/to/dotfiles-portable"
 fi
 
 # The sudo keepalive is killed by the EXIT trap (see top of the script).

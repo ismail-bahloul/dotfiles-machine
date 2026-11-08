@@ -4,24 +4,14 @@ set -e
 
 # ─── Locate repo + load logging library from the local clone ─────────────────
 REPO_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-if [ -f "$REPO_SCRIPT_DIR/lib/logging.sh" ]; then
-  # shellcheck source=lib/logging.sh
-  source "$REPO_SCRIPT_DIR/lib/logging.sh"
-else
-  # Fallback: minimal logging
-  LOG_ERR=0 LOG_WARN=0 LOG_UNVALIDATED=0
-  log_init() { :; }
-  log_section() { echo ""; echo "─── $1 ───"; }
-  log_pass() { echo "  ✔ $1"; }
-  log_fail() { LOG_ERR=$((LOG_ERR + 1)); echo "  ✘ $1"; }
-  log_fatal() { echo "  ✘ $1"; exit 1; }
-  log_warn() { LOG_WARN=$((LOG_WARN + 1)); echo "  ! $1"; }
-  log_info() { echo "  → $1"; }
-  log_skip() { echo "  ⋯ $1"; }
-  log_detail() { echo "    • $1"; }
-  log_cmd() { echo "  $ $1"; }
-  log_summary() { :; }
+# Same contract as install.sh: validate.sh runs from the clone, so the library
+# is always there and no fallback copy is needed.
+if [ ! -f "$REPO_SCRIPT_DIR/lib/logging.sh" ]; then
+  echo "validate: lib/logging.sh is missing — run this from the repository clone." >&2
+  exit 1
 fi
+# shellcheck source=lib/logging.sh
+source "$REPO_SCRIPT_DIR/lib/logging.sh"
 
 log_init
 SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
@@ -334,17 +324,31 @@ for f in kglobalshortcutsrc kwinrc kwinrulesrc konsolerc dolphinrc; do
 done
 
 # ─── KDE widgets ────────────────────────────────────────────────────────────
+# The widgets are fetched at a pinned commit by run_onchange_13-plasmoids.sh, so
+# presence alone is not enough: the installed ref must be the pinned one. A
+# missing stamp means the copy predates the pinned fetch (a warning, not a
+# failure: re-applying fixes it).
 log_section "KDE widgets"
 
-if [ -d "$HOME/.local/share/plasma/plasmoids/org.kde.olib.thermalmonitor" ]; then
-  log_pass "Thermal monitor widget"
+PLASMOID_SCRIPT="$SCRIPT_DIR/.chezmoiscripts/run_onchange_13-plasmoids.sh"
+plasmoid_check() { # id expected-ref
+  local id="$1" want="$2" stamp="$HOME/.cache/plasmoids/$1.ref"
+  if [ ! -d "$HOME/.local/share/plasma/plasmoids/$id" ]; then
+    log_fail "$id missing"
+  elif [ ! -f "$stamp" ]; then
+    log_warn "$id predates the pinned fetch — re-apply to update it"
+  elif [ "$(cat "$stamp")" = "$want" ]; then
+    log_pass "$id at $want"
+  else
+    log_fail "$id at $(cat "$stamp"), expected $want"
+  fi
+}
+
+if [ -f "$PLASMOID_SCRIPT" ]; then
+  plasmoid_check com.github.mazen.salatprayertime "$(sed -n 's/^SALAT_REF=//p' "$PLASMOID_SCRIPT")"
+  plasmoid_check org.kde.olib.thermalmonitor "$(sed -n 's/^THERMAL_REF=//p' "$PLASMOID_SCRIPT")"
 else
-  log_fail "Thermal monitor widget missing"
-fi
-if [ -d "$HOME/.local/share/plasma/plasmoids/com.github.mazen.salatprayertime" ]; then
-  log_pass "Salat prayer widget"
-else
-  log_fail "Salat prayer widget missing"
+  log_warn "run_onchange_13-plasmoids.sh not found — widget refs unchecked"
 fi
 
 # ─── omenctl fans ───────────────────────────────────────────────────────────

@@ -11,17 +11,14 @@ packages.d
 # Opt-in application bundles (bricks/install), never installed by chezmoi
 bricks
 
-# Portable userspace core: its own chezmoi source dir (see portable/README.md).
-# Ignored here so the machine source never deploys it under ~/portable;
-# install.sh applies it as a second source after the machine layer.
-portable
+# The userspace layer is its own repository; install.sh applies it from a pinned
+# tag. Nothing here deploys it, and no `portable` entry is needed.
 README.md
 LICENSE
 validate.sh
 install.sh
 test.sh
 smoke.sh
-bootstrap.sh
 bootstrap-machine.sh
 
 # Shell libraries sourced by install.sh / validate.sh / .chezmoiscripts/*
@@ -45,7 +42,3 @@ win
 
 # Local secrets (API keys, tokens) — never versioned
 dot_config/zsh/secrets
-
-# GitHub CLI identity and OAuth token (written by `gh auth login`) — the repo is
-# public, so this file stays local; gh recreates it on a fresh install
-dot_config/gh/hosts.yml

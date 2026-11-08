@@ -1,6 +1,6 @@
 # =============================================================================
-# packages.d/shell.pacman — the zsh stack used by portable/dot_zshrc,
-# dot_config/zsh/machine.zsh and dot_p10k.zsh.
+# packages.d/shell.pacman — the zsh stack used by the userspace layer's
+# dot_zshrc, dot_config/zsh/machine.zsh and dot_p10k.zsh.
 # Component: shell
 # Installed by run_once_01-packages.sh.tmpl
 # =============================================================================
