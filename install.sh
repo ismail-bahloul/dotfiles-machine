@@ -210,7 +210,7 @@ if [ -d "$PORTABLE_SRC" ] && [ -f "$PORTABLE_SRC/dot_zshrc" ]; then
   fi
 else
   log_fail "portable layer unavailable ($PORTABLE_REF from $PORTABLE_REPO)"
-  log_detail "check the network, or set DOTFILES_PORTABLE_SRC=/path/to/dotfiles-portable"
+  log_detail "check the network, or set DOTFILES_PORTABLE_SRC=/path/to/dotfiles"
 fi
 
 # The sudo keepalive is killed by the EXIT trap (see top of the script).

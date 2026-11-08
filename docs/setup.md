@@ -15,7 +15,7 @@ from `install.sh`; the commands are identical either way.
 ```bash
 # one-time, on a machine where the repo already lives elsewhere
 mv ~/.local/share/chezmoi ~/.local/share/chezmoi.bak
-ln -s ~/DATA/05_Code/Projects/dotfiles ~/.local/share/chezmoi
+ln -s ~/DATA/05_Code/Projects/dotfiles-machine ~/.local/share/chezmoi
 ```
 
 `~/dotfiles` — the path the README's bootstrap block clones to — is a symlink to
@@ -23,8 +23,13 @@ the same repository on the development machine, for the same reason: a real
 second clone would only lag behind and run a stale `install.sh`.
 
 ```bash
-ln -s ~/DATA/05_Code/Projects/dotfiles ~/dotfiles
+ln -s ~/DATA/05_Code/Projects/dotfiles-machine ~/dotfiles
 ```
+
+The userspace checkout sits next to it at `~/DATA/05_Code/Projects/dotfiles`:
+the repository named `dotfiles` is the userspace layer, this one is
+`dotfiles-machine`. Set `DOTFILES_PORTABLE_SRC` to that path to make
+`install.sh` use the checkout instead of cloning the pinned tag.
 
 A fresh machine keeps real clones at both paths: `bootstrap-machine.sh` needs
 `~/dotfiles` to run `install.sh`, and `install.sh` then lets chezmoi clone its
