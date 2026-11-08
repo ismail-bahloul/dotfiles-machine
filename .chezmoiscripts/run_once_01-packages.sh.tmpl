@@ -14,6 +14,12 @@
 # written before the registry existed) keeps the old behaviour: every known
 # component except wine, which stays explicitly opt-in.
 #
+# `.pacman` lists are resolved against the sync repos first: on CachyOS that
+# includes the prebuilt CachyOS packages (downgrade, btrfs-assistant,
+# acpi_call-dkms...), which are AUR-only on stock Arch. Any target no sync repo
+# provides is retried through paru, so the same list works on both systems
+# without compiling those packages on CachyOS.
+#
 # pkg-hash below: chezmoi only re-runs a run_once_ script when the script's own
 # rendered content changes, yet this script reads packages.d/ at runtime. Without
 # these hashes in the content, editing a package list would never reach an
@@ -112,6 +118,7 @@ if grep -q '^#\[multilib\]' /etc/pacman.conf; then
 fi
 
 # --- Official packages -------------------------------------------------------
+AUR_FALLBACK=()
 log_info "Installing pacman packages (components: ${COMPONENTS[*]})..."
 mapfile -t pacman_pkgs < <(collect pacman)
 if [ "${#pacman_pkgs[@]}" -gt 0 ]; then
@@ -142,7 +149,8 @@ if [ "${#pacman_pkgs[@]}" -gt 0 ]; then
       if ! $skip; then remaining+=("$pkg"); fi
     done
     for pkg in "${unavailable[@]}"; do
-      log_warn "unknown package '$pkg' — skipped"
+      log_warn "not in the sync repos: '$pkg' — will try the AUR"
+      AUR_FALLBACK+=("$pkg")
     done
     log_info "retrying with ${#remaining[@]} package(s)..."
     if [ "${#remaining[@]}" -gt 0 ]; then
@@ -154,6 +162,9 @@ fi
 # --- AUR packages ------------------------------------------------------------
 log_info "Installing AUR packages..."
 mapfile -t aur_pkgs < <(collect aur)
+if [ "${#AUR_FALLBACK[@]}" -gt 0 ]; then
+  aur_pkgs+=("${AUR_FALLBACK[@]}")
+fi
 if [ "${#aur_pkgs[@]}" -gt 0 ]; then
   paru -S --needed --noconfirm "${aur_pkgs[@]}"
 fi
