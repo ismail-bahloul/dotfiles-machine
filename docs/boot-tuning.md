@@ -34,9 +34,17 @@ is machine state (NVRAM), not something a dotfiles repo can version.
   so `vv` changed nothing. Both scripts now match the firmware entry on the
   PARTUUID of the ESP holding `/boot/limine.conf` and write every remembered
   entry variable, which also covers a copy that gets installed later.
-  The dead entries and the stale fallback are left alone on purpose: a disk
-  that is only disconnected comes back with its entry, and the scripts no longer
-  depend on which copy of Limine boots.
+  **Cleaned up the same day.** The five dead entries and the bogus Windows entry
+  were removed (`efibootmgr -b XXXX -B`), and an entry was created for the
+  maintained loader (`\EFI\limine\limine_x64.efi`, Boot0007) and put first:
+  `BootOrder` is now `0007,0001,9999`, keeping the firmware fallback Boot0001 as
+  a safety net. NVRAM before the change:
+  `~/.local/state/efibootmgr-2026-11-09-before.txt`. The old
+  `\EFI\BOOT\BOOTX64.EFI` (12.3.2) stays on the ESP and still boots if the new
+  entry ever disappears; the scripts no longer care which copy runs.
+  Windows has no boot entry until `limine-boot-win` re-creates the real one on
+  `\EFI\Microsoft\Boot\bootmgfw.efi`, which it already does after deleting
+  bogus entries.
 - **nouveau and its per-chipset NVIDIA firmware dropped from the initramfs**
   (`etc/initcpio/install/no-nouveau`). The `kms` hook resolves the NVIDIA GPU
   modalias to *both* `nvidia` and `nouveau`, and nouveau's `modinfo` declares the
