@@ -16,8 +16,9 @@ fi
 # same PARTUUID as the mounted ESP. Picking the first entry whose *label*
 # contains "Limine" is exactly what broke this. NVRAM keeps entries for disks
 # that are gone (five of them here), those fail silently, and the firmware falls
-# through to whatever still boots.
-ESP_PARTUUID=$(findmnt -no PARTUUID --target "$LIMINE_CONF" 2>/dev/null | tr -d '[:space:]')
+# through to whatever still boots. findmnt runs through sudo because /boot is
+# mounted mode 0077: as the user, stat() on limine.conf is already denied.
+ESP_PARTUUID=$(sudo findmnt -no PARTUUID --target "$LIMINE_CONF" 2>/dev/null | tr -d '[:space:]')
 LIMINE_ID=$(sudo efibootmgr -v 2>/dev/null | awk -v esp="$ESP_PARTUUID" '
   BEGIN { limine = ""; fallback = "" }
   /^Boot[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][ *]/ {
@@ -31,7 +32,12 @@ LIMINE_ID=$(sudo efibootmgr -v 2>/dev/null | awk -v esp="$ESP_PARTUUID" '
   END { print (limine != "" ? limine : fallback) }')
 
 if [ -z "$LIMINE_ID" ]; then
-  echo "Warning: no Limine entry points at this ESP; default_entry still applies"
+  # Last resort: the entry that booted this session reaches the Limine whose
+  # menu is being edited, so reuse it instead of guessing by label.
+  LIMINE_ID=$(sudo efibootmgr 2>/dev/null | sed -n 's/^BootCurrent: //p')
+fi
+if [ -z "$LIMINE_ID" ]; then
+  echo "Warning: no Limine entry found; default_entry still applies on the usual boot path"
 fi
 
 # Fallback used when Limine has no remembered entry (`remember_last_entry`).
