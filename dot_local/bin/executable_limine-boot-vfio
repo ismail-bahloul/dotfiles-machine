@@ -2,8 +2,6 @@
 # One-time boot to the VFIO GPU passthrough entry (kernel-agnostic)
 LIMINE_CONF="/boot/limine.conf"
 SELF_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-LIMINE_ID=$(efibootmgr -v 2>/dev/null | grep -i "Limine" | head -1 | sed 's/Boot\([0-9a-fA-F]*\).*/\1/')
-EFIVAR_PATH=$(sudo find /sys/firmware/efi/efivars -name "LimineLastBootedEntry-*" 2>/dev/null | head -1)
 
 # Select by path, not by index: the entry name depends on the kernel and the
 # menu layout (limine-entry-tool wraps kernels in a menu), so derive it from
@@ -13,9 +11,27 @@ if ! ENTRY_PATH=$(sudo /usr/bin/python3 "$SELF_DIR/limine-entry-path" "$LIMINE_C
   exit 1
 fi
 
+# Which firmware entry boots the Limine that reads this limine.conf? Match the
+# partition that holds the file: efibootmgr's HD(n,GPT,<guid>) node carries the
+# same PARTUUID as the mounted ESP. Picking the first entry whose *label*
+# contains "Limine" is exactly what broke this. NVRAM keeps entries for disks
+# that are gone (five of them here), those fail silently, and the firmware falls
+# through to whatever still boots.
+ESP_PARTUUID=$(findmnt -no PARTUUID --target "$LIMINE_CONF" 2>/dev/null | tr -d '[:space:]')
+LIMINE_ID=$(sudo efibootmgr -v 2>/dev/null | awk -v esp="$ESP_PARTUUID" '
+  BEGIN { limine = ""; fallback = "" }
+  /^Boot[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][ *]/ {
+    id = substr($0, 5, 4)
+    low = tolower($0)
+    if (esp != "" && index(low, "gpt," tolower(esp)) == 0) next
+    if (low ~ /grub|systemd-boot|bootmgfw/) next
+    if (low ~ /limine.*\.efi/) { limine = id; exit }
+    if (low !~ /\.efi/) fallback = id   # no loader path: removable-media fallback
+  }
+  END { print (limine != "" ? limine : fallback) }')
+
 if [ -z "$LIMINE_ID" ]; then
-  echo "Error: Limine boot entry not found"
-  exit 1
+  echo "Warning: no Limine entry points at this ESP; default_entry still applies"
 fi
 
 # Fallback used when Limine has no remembered entry (`remember_last_entry`).
@@ -25,26 +41,44 @@ else
   printf 'default_entry: %s\n' "$ENTRY_PATH" | sudo tee -a "$LIMINE_CONF" > /dev/null
 fi
 
-# Remember the entry for `remember_last_entry: yes`. The variable only exists
-# once Limine has booted at least once; without it default_entry above applies.
-if [ -n "$EFIVAR_PATH" ]; then
-  sudo chattr -i "$EFIVAR_PATH" 2>/dev/null
-  if ! sudo /usr/bin/python3 -c '
+# Remember the entry for `remember_last_entry: yes`. Limine derives the variable
+# name from a GUID compiled into its own binary, so every installed copy has its
+# own: here \EFI\limine\limine_x64.efi and the \EFI\BOOT\BOOTX64.EFI fallback
+# that actually boots. Updating only the first variable found wrote the copy
+# that never runs, and `remember_last_entry` then made that untouched variable
+# win over default_entry, so the entry never changed. Write them all; an install
+# without a variable yet reads default_entry instead, so both paths are covered.
+mapfile -t EFIVARS < <(sudo find /sys/firmware/efi/efivars -maxdepth 1 \
+  -name 'LimineLastBootedEntry-*' 2>/dev/null | sort)
+if [ "${#EFIVARS[@]}" -eq 0 ]; then
+  echo "No remembered-entry variable yet (default_entry covers this boot)"
+else
+  for var in "${EFIVARS[@]}"; do sudo chattr -i "$var" 2>/dev/null || true; done
+  if ! sudo /usr/bin/python3 - "$ENTRY_PATH" "${EFIVARS[@]}" <<'PY'
 import os, sys
-path, entry = sys.argv[1], sys.argv[2]
+
+entry, paths = sys.argv[1], sys.argv[2:]
 data = b"\x07\x00\x00\x00" + entry.encode() + b"\x00"
-fd = os.open(path, os.O_WRONLY)
-try:
-    os.write(fd, data)
-finally:
-    os.close(fd)
-' "$EFIVAR_PATH" "$ENTRY_PATH"; then
-    echo "Warning: could not update $EFIVAR_PATH (default_entry still set)"
+failed = False
+for path in paths:
+    try:
+        fd = os.open(path, os.O_WRONLY)
+        try:
+            os.write(fd, data)
+        finally:
+            os.close(fd)
+    except OSError as exc:
+        print(f"  {path}: {exc.strerror}", file=sys.stderr)
+        failed = True
+sys.exit(1 if failed else 0)
+PY
+  then
+    echo "Warning: some remembered-entry variables could not be updated (default_entry still set)"
   fi
 fi
 
 # Boot Limine via UEFI BootNext
-if ! sudo efibootmgr --bootnext "$LIMINE_ID" > /dev/null 2>&1; then
+if [ -n "$LIMINE_ID" ] && ! sudo efibootmgr --bootnext "$LIMINE_ID" > /dev/null 2>&1; then
   echo "Error: could not set BootNext to $LIMINE_ID"
   exit 1
 fi

@@ -18,6 +18,25 @@ is machine state (NVRAM), not something a dotfiles repo can version.
   `efibootmgr`, repair with `efibootmgr -o`. The bogus Windows/grub entry came
   back once (2026-10-17) and was put first in `BootOrder`; `limine-boot-win` now
   deletes it before booting Windows and re-creates the real entry if needed.
+  **2026-11-09: they are back, and the aliases stopped working.** NVRAM again
+  carries Limine entries for partitions that no longer exist (`HD(2,GPT,da479f8a...)`,
+  `HD(2,GPT,fdf73864...)`, `HD(4,GPT,e8da2988...)`) plus systemd-boot entries for
+  the same ghosts, and `BootOrder` still starts with one of them. The machine
+  boots through the firmware fallback `\EFI\BOOT\BOOTX64.EFI` (Boot0001,
+  "Internal Hard Disk"), which is **Limine 12.3.2**, while `/boot/EFI/limine/`
+  carries **12.9.6**.
+  `limine-boot-vfio`/`-linux` took the first entry labelled "Limine" (a dead
+  one, so `BootNext` was a no-op the firmware skipped) and wrote the first
+  `LimineLastBootedEntry-*` variable it found. Limine derives that variable name
+  from a GUID compiled into its own binary, so each installed copy has its own:
+  the write landed on the copy that never boots, and `remember_last_entry: yes`
+  then made the untouched variable of the booted copy win over `default_entry`,
+  so `vv` changed nothing. Both scripts now match the firmware entry on the
+  PARTUUID of the ESP holding `/boot/limine.conf` and write every remembered
+  entry variable, which also covers a copy that gets installed later.
+  The dead entries and the stale fallback are left alone on purpose: a disk
+  that is only disconnected comes back with its entry, and the scripts no longer
+  depend on which copy of Limine boots.
 - **nouveau and its per-chipset NVIDIA firmware dropped from the initramfs**
   (`etc/initcpio/install/no-nouveau`). The `kms` hook resolves the NVIDIA GPU
   modalias to *both* `nvidia` and `nouveau`, and nouveau's `modinfo` declares the
