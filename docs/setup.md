@@ -158,8 +158,8 @@ settings, boot tuning, fstab) and have no component to belong to.
 `looking_glass` goes one step further and **tears its own configuration down**:
 its script is `run_onchange_` (not `run_once_`, which keys its state on every
 content hash ever seen and would skip a second disable after a re-enable), and
-the guard also calls `looking-glass-teardown`, which removes the tmpfiles/sysctl
-drop-ins and `/dev/shm/looking-glass`. Packages are still never removed. Others
+the guard also calls `looking-glass-teardown`, which removes the tmpfiles
+drop-in and `/dev/shm/looking-glass`. Packages are still never removed. Others
 only gate; adding a teardown is a per-component decision (pass its template name
 to the guard).
 
@@ -173,7 +173,7 @@ not deployed by chezmoi itself (`etc` is in `.chezmoiignore`); a script in
 
 - `run_onchange_12-peripherals.sh.tmpl`, `/etc/logid.cfg`
 - `run_once_04-omenctl.sh.tmpl`, the omenctl profile/watch units and udev rules
-- `run_onchange_07-looking-glass.sh.tmpl`, the IVSHMEM tmpfiles entry and the hugepages sysctl
+- `run_onchange_07-looking-glass.sh.tmpl`, the IVSHMEM tmpfiles entry
 - `run_once_11-boot-tuning.sh.tmpl`, the initramfs hooks and the VFIO drop-in
 
 They all use `install_system_file` (`lib/system.sh`), which copies a file only if

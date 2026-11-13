@@ -297,16 +297,17 @@ log_section "Looking Glass"
 if component_enabled looking_glass; then
   LG=/dev/shm/looking-glass
   if [ -f "$LG" ]; then
-    SIZE=$(du -h "$LG" | awk '{print $1}')
-    log_pass "Shared memory ($SIZE)"
+    SIZE=$(stat -c '%s' "$LG" 2>/dev/null || echo 0)
+    SIZE=$((SIZE / 1024 / 1024))
+    log_pass "Shared memory (${SIZE}M; 0 is normal while the VM is off)"
   else
     log_fail "Shared memory not found"
   fi
-  HP=$(cat /proc/sys/vm/nr_hugepages 2>/dev/null)
-  if [ "$HP" -ge 64 ] 2>/dev/null; then
-    log_pass "Hugepages: $HP"
+  LG_CONF="$HOME/.config/looking-glass/client.ini"
+  if [ -f "$LG_CONF" ] && grep -q '^shmFile=/dev/shm/looking-glass$' "$LG_CONF"; then
+    log_pass "Client config (shmFile=/dev/shm/looking-glass)"
   else
-    log_fail "Hugepages: $HP (expected 64+)"
+    log_fail "Client config missing or shmFile != /dev/shm/looking-glass"
   fi
 else
   log_skip "Looking Glass (looking_glass disabled)"

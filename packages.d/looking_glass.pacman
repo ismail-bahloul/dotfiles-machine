@@ -2,7 +2,7 @@
 # packages.d/looking_glass.pacman — no repo packages: the host client is on the
 # AUR (looking_glass.aur). This file only registers the component.
 #
-# Component: looking_glass — also needs the IVSHMEM/hugepages setup from
+# Component: looking_glass — also needs the IVSHMEM shared memory setup from
 # run_onchange_07-looking-glass.sh.tmpl, which tears it down again when this
 # component is disabled.
 # =============================================================================

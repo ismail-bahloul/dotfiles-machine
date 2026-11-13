@@ -10,16 +10,6 @@ if [ -f /etc/tmpfiles.d/looking-glass.conf ]; then
   sudo rm -f /etc/tmpfiles.d/looking-glass.conf
   log_detail "removed /etc/tmpfiles.d/looking-glass.conf"
 fi
-if [ -f /etc/sysctl.d/10-looking-glass.conf ]; then
-  sudo rm -f /etc/sysctl.d/10-looking-glass.conf
-  log_detail "removed /etc/sysctl.d/10-looking-glass.conf"
-fi
 sudo rm -f /dev/shm/looking-glass
-
-# Only lower hugepages if the value is still the one this component set.
-if [ "$(sysctl -n vm.nr_hugepages 2>/dev/null || echo 0)" = "64" ]; then
-  sudo sysctl -w vm.nr_hugepages=0 >/dev/null
-  log_detail "vm.nr_hugepages -> 0"
-fi
 
 log_pass "Looking Glass configuration removed (package left installed)."

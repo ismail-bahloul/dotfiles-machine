@@ -292,6 +292,16 @@ for f in dot_config/kwinrulesrc dot_config/kxkbrc; do
   fi
 done
 
+# ─── Looking Glass config ───────────────────────────────────────────────────
+log_section "Looking Glass config"
+
+LG_CONF="dot_config/looking-glass/client.ini"
+if [ -f "$LG_CONF" ] && grep -q '^shmFile=/dev/shm/looking-glass$' "$LG_CONF"; then
+  log_pass "client.ini (shmFile)"
+else
+  log_fail "$LG_CONF missing or shmFile != /dev/shm/looking-glass"
+fi
+
 # ─── Summary ────────────────────────────────────────────────────────────────
 log_summary
 [ "$LOG_ERR" -eq 0 ] || exit 1
