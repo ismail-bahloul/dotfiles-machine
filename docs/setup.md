@@ -39,7 +39,7 @@ The userspace layer is a **separate repository** (`dotfiles`). `/d`
 clones it at `~/.local/share/dotfiles-portable` and applies it with
 `chezmoi --source`, which is why a userspace-only machine never creates
 `~/.local/share/chezmoi`. `install.sh` applies the same repository from a pinned
-tag (`DOTFILES_PORTABLE_REF`, `v1.0.4`) into the same directory, and
+tag (`DOTFILES_PORTABLE_REF`, `v1.1.0`) into the same directory, and
 `DOTFILES_PORTABLE_SRC=/path/to/checkout` short-circuits the fetch.
 
 ## Repository map
@@ -79,7 +79,6 @@ dotfiles/
 │   ├── audio-apps.{pacman,aur}       # REAPER, plugins
 │   ├── creative.{pacman,aur}         # Blender, OBS, upscayl, shutter-encoder
 │   └── misc-apps.{pacman,aur}        # obsidian, localsend, vesktop…
-├── dot_p10k.zsh                      # p10k prompt config (regenerate: `p10k configure` + `chezmoi add`)
 ├── etc/                              # system files (units, udev, initcpio, tmpfiles, sysctl, logid)
 │   ├── initcpio/install/no-nouveau    # mkinitcpio hook: drop nouveau + GSP fw
 │   └── mkinitcpio.conf.d/20-no-nouveau.conf
@@ -107,6 +106,7 @@ dotfiles/
 │   │   ├── omenctl-tui               # desktop launcher wrapper (sudo + terminal)
 │   │   ├── mount-shared              # mount Windows SHARED (NTFS) in rw
 │   │   ├── umount-shared             # unmount SHARED before rebooting to Windows
+│   │   ├── deploy-plugins            # VST3/LV2/CLAP audio plugins → ~/.vst3 and friends
 │   │   ├── .add-vfio-entry           # (internal) adds the VFIO entry to limine.conf
 │   │   ├── kitty-material-you-hook.sh# run by kde-material-you-colors → delegates to material-you-refresh
 │   │   └── material-you-refresh      # manual re-sync (safety net)

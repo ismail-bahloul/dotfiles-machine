@@ -10,7 +10,7 @@ curl -fsSL https://ismailbahloul.com/m | bash
 
 Arch/CachyOS only; on anything else it stops before cloning and points at `/d`.
 
-The userspace layer (`~/.zshrc`, kitty, git, gh) is
+The userspace layer (`~/.zshrc`, `~/.p10k.zsh`, kitty, git, gh) is
 [`dotfiles`](https://github.com/ismail-bahloul/dotfiles); this installer applies
 it from a pinned tag.
 
