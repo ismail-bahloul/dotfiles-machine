@@ -1,0 +1,13 @@
+[Unit]
+Description=Capture SPI controller state as early as possible (myomen15)
+After=local-fs.target
+Before=display-manager.service
+ConditionPathExists=/dev/mem
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/iswad/DATA/05_Code/Projects/myomen15/evidence/flash-write/boot-filter-capture.py
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

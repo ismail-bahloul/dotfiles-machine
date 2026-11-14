@@ -1,0 +1,23 @@
+# One-shot FCLK CBS probe: on the trial boot, capture the active FCLK/MCLK/UCLK
+# levels and revert AmdSetup:274 to its default (255) -- so the machine is back
+# to stock on the following POST without any hands. The flag file is both the
+# arm switch and the disarm (the script removes it).
+#
+# Arm:  touch /etc/omen-fclk-probe.armed && bios.py set AmdSetup:274 1067MHz --commit
+# Then reboot. After the trial boot, read /var/log/omen-fclk-probe.log
+# (or evidence/fclk-probe/result.log).
+
+[Unit]
+Description=One-shot FCLK CBS probe (capture + revert, then disarm)
+ConditionPathExists=/etc/omen-fclk-probe.armed
+After=local-fs.target
+Before=power-profile.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /usr/local/bin/fclk-boot.sh
+TimeoutStartSec=120
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

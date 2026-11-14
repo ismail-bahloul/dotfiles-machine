@@ -1,6 +1,0 @@
-# bricks/creative.pacman — content creation / capture (opt-in).
-# Install with: ./bricks/install creative
-
-blender
-obs-studio
-# davinci-resolve               # optional, validate before deploying

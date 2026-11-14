@@ -1,7 +1,0 @@
-# =============================================================================
-# packages.d/peripherals.pacman — no repo packages; the mouse daemon comes from
-# the AUR (peripherals.aur). This file only registers the component.
-#
-# Component: peripherals — also gates the /etc/logid.cfg block in
-# run_once_01-packages.sh.tmpl.
-# =============================================================================

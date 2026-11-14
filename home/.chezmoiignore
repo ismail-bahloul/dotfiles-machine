@@ -1,0 +1,4 @@
+# Applied with: chezmoi --source machine/home apply
+# Keep repo-only files out of $HOME.
+README.md
+.gitignore

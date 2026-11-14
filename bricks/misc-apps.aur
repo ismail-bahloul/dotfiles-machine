@@ -1,6 +1,0 @@
-# bricks/misc-apps.aur — AUR side of the misc-apps brick (opt-in).
-# Install with: ./bricks/install misc-apps
-
-vesktop-bin                     # Discord with native Wayland support
-zapzap                          # WhatsApp
-pcloud-drive

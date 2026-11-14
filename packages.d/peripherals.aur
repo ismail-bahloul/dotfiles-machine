@@ -1,6 +1,0 @@
-# =============================================================================
-# packages.d/peripherals.aur — Logitech mouse support (MX Master 3S).
-# Installed by run_once_01-packages.sh.tmpl (via paru)
-# =============================================================================
-
-logiops                 # Logitech mouse config (MX Master 3S)

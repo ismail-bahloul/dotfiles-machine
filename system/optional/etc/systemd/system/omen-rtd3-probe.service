@@ -1,0 +1,21 @@
+# One-shot RTD3 decision probe. Not enabled at boot -- the user starts it by
+# hand when ready, because it takes the graphical session down for ~100 s.
+#
+#   systemctl start omen-rtd3-probe.service
+#
+# ExecStopPost is the safety net: desktop, nbfc, persistenced and the nvidia
+# DRM modules are restored even if the probe script is killed halfway.
+
+[Unit]
+Description=One-shot RTD3 decision probe (zero-client dGPU suspend test)
+Documentation=file:///home/iswad/DATA/05_Code/Projects/myomen15/evidence/rtd3-probe/README.md
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /usr/local/bin/rtd3-probe.sh
+ExecStopPost=/bin/sh -c 'modprobe nvidia_drm modeset=1; systemctl start display-manager nbfc_service nvidia-persistenced'
+TimeoutStartSec=180
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

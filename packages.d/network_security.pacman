@@ -1,8 +1,0 @@
-# =============================================================================
-# packages.d/network_security.pacman — firewall and VPN client.
-# Component: network_security (openssh lives in base)
-# Installed by run_once_01-packages.sh.tmpl
-# =============================================================================
-
-ufw
-proton-vpn-cli

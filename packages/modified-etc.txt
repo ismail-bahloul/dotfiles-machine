@@ -1,0 +1,11 @@
+/etc/conf.d/snapper
+/etc/fstab
+/etc/hosts
+/etc/libvirt/network.conf
+/etc/limine-snapper-sync.conf
+/etc/locale.gen
+/etc/mkinitcpio.conf
+/etc/pacman.conf
+/etc/plymouth/plymouthd.conf
+/etc/ufw/user6.rules
+/etc/ufw/user.rules

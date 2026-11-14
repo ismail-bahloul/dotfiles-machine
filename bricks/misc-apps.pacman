@@ -1,5 +1,0 @@
-# bricks/misc-apps.pacman — applications that are not part of the core (opt-in).
-# Install with: ./bricks/install misc-apps
-
-obsidian                        # notes
-localsend                       # AirDrop-like file sharing

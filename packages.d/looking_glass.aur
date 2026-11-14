@@ -1,6 +1,0 @@
-# =============================================================================
-# packages.d/looking_glass.aur — Looking Glass host client.
-# Installed by run_once_01-packages.sh.tmpl (via paru)
-# =============================================================================
-
-looking-glass          # Looking Glass (IVSHMEM host client)

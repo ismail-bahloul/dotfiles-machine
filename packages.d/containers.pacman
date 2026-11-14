@@ -1,8 +1,0 @@
-# =============================================================================
-# packages.d/containers.pacman — container tooling.
-# Component: containers
-# Installed by run_once_01-packages.sh.tmpl
-# =============================================================================
-
-podman
-distrobox

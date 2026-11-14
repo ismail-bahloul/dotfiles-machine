@@ -1,0 +1,22 @@
+New Partition                               CRUCIAL\040X8                nofail                                                                                                   0 0 # /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a device; this may
+# be used with UUID= as a more robust way to name devices that works even if
+# disks are added and removed. See fstab(5).
+#
+# <file system>             <mount point>  <type>  <options>  <dump>  <pass>
+UUID=6C6A-97E6                              /boot                vfat    umask=0077                                                                                               0 2 
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /                    btrfs   subvol=/@,noatime,compress=zstd:1                                                                        0 0 
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /home                btrfs   subvol=/@home,noatime,compress=zstd:1                                                                    0 0 
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /root                btrfs   subvol=/@root,noatime,compress=zstd:1                                                                    0 0 
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /srv                 btrfs   subvol=/@srv,noatime,compress=zstd:1                                                                     0 0 
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /var/cache           btrfs   subvol=/@cache,noatime,compress=zstd:1                                                                   0 0 
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /var/tmp             btrfs   subvol=/@tmp,noatime,compress=zstd:1                                                                     0 0 
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /var/log             btrfs   subvol=/@log,noatime,compress=zstd:1                                                                     0 0 
+tmpfs                                       /tmp                 tmpfs   noatime,mode=1777                                                                                        0 0 
+
+UUID=57178726-50eb-4fb0-80e6-3129e74425f4   /home/iswad/DATA     btrfs   subvol=@/@DATA,noatime,compress=zstd:1                                                                   0 0 
+
+# Partition Windows partagee (SHARED, NTFS) - montage au boot
+# nofail : si Windows est en Fast Startup / NTFS "dirty", le montage echoue sans bloquer le boot
+UUID=5CAC12755C11BA05                       /home/iswad/SHARED   ntfs3   rw,uid=1000,gid=1000,iocharset=utf8,umask=022,windows_names,noatime,nofail,x-systemd.device-timeout=10   0 0 

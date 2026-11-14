@@ -1,0 +1,43 @@
+# Omenctl, the fan governor unit. Enabled at boot in the same early slot nbfc
+# used (DefaultDependencies=no, after local-fs, before sysinit/basic).
+#
+#   systemctl start omenctl
+#   systemctl stop omenctl     # stop path resets fans to the EC's own curve
+#
+# The safety contract (see ../ec-map.md): the fan setpoints are a latch, so
+# EVERY stop path -- clean, crash (via the wrapper), watchdog kill -- ends in
+# 255, which hands the fans back to the EC firmware (a steeper, louder curve:
+# ~50 % at 65 C). Restart=no is deliberate: a failed governor falls back to
+# the EC and stays there.
+#
+# Conflicts= keeps nbfc_service (no longer needed, may still be installed) from
+# ever running as a second writer.
+
+[Unit]
+Description=Omenctl (fan governor)
+Documentation=https://github.com/ismail-bahloul/omenctl
+DefaultDependencies=no
+After=local-fs.target sys-kernel-debug.mount
+Before=sysinit.target basic.target
+Wants=local-fs.target
+Conflicts=nbfc_service.service
+
+[Service]
+Type=notify
+# The wrapper is the crash-layer of the safety contract: it survives the daemon
+# and cleans up if the daemon dies by itself (ExecStopPost only runs for
+# systemd-initiated stops -- measured 2026-10-02). It also modprobes ec_sys.
+ExecStart=/bin/sh /usr/local/bin/omenctl-run.sh
+# READY/WATCHDOG come from the child python, so accept notifications from it.
+NotifyAccess=all
+WatchdogSec=10
+Restart=no
+LimitCORE=0
+# The contract: release the latch and hand control back, whatever happened.
+ExecStopPost=/usr/bin/python3 /usr/local/bin/omenctl reset --raw
+TimeoutStopSec=20
+SendSIGKILL=yes
+StandardOutput=journal
+
+[Install]
+WantedBy=sysinit.target multi-user.target

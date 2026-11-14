@@ -2,3 +2,8 @@
 # imported rather than run directly). Never commit build artifacts.
 __pycache__/
 *.py[cod]
+
+# Secrets — never versioned
+home/dot_config/zsh/secrets
+home/dot_config/gh/hosts.yml
+home/dot_ssh/id_*

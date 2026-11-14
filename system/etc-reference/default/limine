@@ -1,0 +1,3 @@
+ESP_PATH="/boot"
+KERNEL_CMDLINE[default]+="iommu=pt quiet nowatchdog splash rw rootflags=subvol=/@ root=UUID=57178726-50eb-4fb0-80e6-3129e74425f4"
+BOOT_ORDER="*, *lts, *fallback, Snapshots"

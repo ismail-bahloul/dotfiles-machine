@@ -1,5 +1,0 @@
-# The plasmoids under dot_local/share/plasma/plasmoids/ are vendored upstream
-# projects, not code written for this repo (see the README's "Vendored
-# third-party widgets"). Keep them out of GitHub's language statistics so the
-# repo is not mislabelled as a QML project.
-dot_local/share/plasma/plasmoids/** linguist-vendored

@@ -1,7 +1,0 @@
-# =============================================================================
-# packages.d/hardware_amd.aur — AUR side of the hardware_amd component.
-# Installed by run_once_01-packages.sh.tmpl (via paru)
-# =============================================================================
-
-ryzenadj
-ryzen_smu-dkms-git

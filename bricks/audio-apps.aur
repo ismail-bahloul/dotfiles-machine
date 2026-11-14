@@ -1,7 +1,0 @@
-# bricks/audio-apps.aur — AUR plugin bundles (opt-in).
-# Install with: ./bricks/install audio-apps
-
-airwindows-consolidated-bin
-tal-reverb4-clap-bin
-zl-compressor-bin
-zl-equalizer-bin

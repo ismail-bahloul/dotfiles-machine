@@ -1,8 +1,0 @@
-# =============================================================================
-# packages.d/apps.aur — AUR side of the apps component.
-# Installed by run_once_01-packages.sh.tmpl (via paru)
-# =============================================================================
-
-# Config-coupled: both are driven by run_once_08/09.
-kde-material-you-colors         # wallpaper-driven theming daemon (run_once_09)
-kwin-effects-better-blur-dx     # KWin blur effect used by the "blur everything" rule (run_once_08)

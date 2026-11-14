@@ -1,0 +1,16 @@
+# Ajout VFIO à mettre sur l'entrée de boot dédiée (pas sur l'entrée normale).
+#
+# L'entrée normale a déjà `iommu=pt` sur cette machine (via
+# KERNEL_CMDLINE[default] dans /etc/default/limine). Dans ce cas, l'ajout
+# utile est seulement :
+vfio-pci.ids=10de:249d,10de:228b
+#
+# Si ton entrée normale n'a pas `iommu=pt`, ajoute les deux :
+# iommu=pt vfio-pci.ids=10de:249d,10de:228b
+#
+# Cmdline complet de l'entrée VFIO au moment de la sauvegarde (l'UUID racine
+# changera) :
+# quiet nowatchdog splash rw rootflags=subvol=/@ root=UUID=57178726-50eb-4fb0-80e6-3129e74425f4 iommu=pt vfio-pci.ids=10de:249d,10de:228b
+#
+# 10de:249d = RTX 3070 Mobile
+# 10de:228b = son contrôleur audio HDMI
