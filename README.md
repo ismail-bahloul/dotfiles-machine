@@ -12,6 +12,7 @@ dans le dépôt `dotfiles`. Ce dépôt-ci contient le layer machine :
 ```
 .
 ├── README.md
+├── bootstrap-machine.sh     # entrée /m : clone + install.sh --all
 ├── install.sh               # paquets + (option) /etc + (option) home
 ├── packages/
 │   ├── repo.txt             # pacman -Qqen (snapshot)
@@ -30,6 +31,17 @@ dans le dépôt `dotfiles`. Ce dépôt-ci contient le layer machine :
 La source chezmoi est `home/`, jamais la racine. Un `.chezmoiignore` racine
 contient `*` : si `~/.local/share/chezmoi` pointe encore ici, `chezmoi apply`
 ne déploie rien. Pointe-le plutôt vers `.../dotfiles-machine/home`.
+
+## One-liner
+
+```bash
+curl -fsSL https://ismailbahloul.com/m | bash
+```
+
+Clone/update `~/dotfiles-machine` puis `./install.sh --all` (paquets +
+`system/etc` + `home/`). Les services, Limine/VFIO et snapper restent manuels
+(voir la suite). Aperçu : `... | bash -s -- --dry-run`. Paquets seuls : clone
+puis `./install.sh`.
 
 ## Matériel / constantes
 
@@ -279,8 +291,8 @@ Ne commite **jamais** : `~/.ssh/id_*`, `~/.config/gh/hosts.yml`,
 ## Ancien dépôt (`v2-full`)
 
 Ce dépôt s'appelait `dotfiles-machine` et contenait l'automatisation complète
-(scripts `run_once_`, `validate.sh`, `smoke.sh`, `test.sh`,
-`bootstrap-machine.sh`). Elle est conservée dans le tag `v2-full` :
+(scripts `run_once_`, `validate.sh`, `smoke.sh`, `test.sh` et l'ancien
+`bootstrap-machine.sh` complet). Elle est conservée dans le tag `v2-full` :
 
 ```bash
 git show v2-full:validate.sh
@@ -288,3 +300,6 @@ git worktree add /tmp/dotfiles-machine-v2-full v2-full
 ```
 
 Les mesures et le « pourquoi » sont dans `myomen15`.
+
+Le `bootstrap-machine.sh` actuel est un lanceur minimal : clone/update puis
+`install.sh --all`.
