@@ -3,7 +3,8 @@
 Ces éléments ne sont pas nécessaires à une machine qui démarre et qui sert au
 quotidien. Ils sont ici pour ne pas les perdre. Les scripts d'origine
 (`run_once_02`, `run_once_08`, `run_once_09`, `run_onchange_07`,
-`run_onchange_13`, `run_onchange_03`) restent dans `dotfiles-machine` ;
+`run_onchange_13`, `run_onchange_03`) restent dans l'ancien `dotfiles-machine`
+(tag `v2-full`) ;
 l'intention est de taguer cet état `v2-full` avant de l'archiver.
 
 | Élément | Fichier | À faire |

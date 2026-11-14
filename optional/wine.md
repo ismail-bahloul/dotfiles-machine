@@ -1,8 +1,8 @@
 # Wine (VST Windows)
 
 Désactivé par défaut : uniquement utile pour les VST Windows via yabridge.
-Le script d'origine est `run_once_02-wine-staging.sh` dans `dotfiles-machine`
-(tag `v2-full`).
+Le script d'origine est `run_once_02-wine-staging.sh` dans l'ancien
+`dotfiles-machine` (tag `v2-full`).
 
 ## Ce qu'il fait
 

@@ -19,8 +19,8 @@
 # =============================================================================
 set -euo pipefail
 
-REPO="${MACHINE_REPO:-${DOTFILES_REPO:-https://github.com/ismail-bahloul/dotfiles-machine.git}}"
-DIR="${MACHINE_DIR:-${DOTFILES_DIR:-$HOME/dotfiles-machine}}"
+REPO="${MACHINE_REPO:-${DOTFILES_REPO:-https://github.com/ismail-bahloul/machine.git}}"
+DIR="${MACHINE_DIR:-${DOTFILES_DIR:-$HOME/machine}}"
 
 if [ ! -f /etc/arch-release ] && [ ! -f /etc/cachyos-release ]; then
   cat >&2 <<'EOF'

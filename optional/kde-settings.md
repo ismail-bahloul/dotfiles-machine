@@ -17,8 +17,8 @@ Ces fichiers sont écrits par `chezmoi --source home apply`.
 
 L'ancien `run_once_08-kde-settings.sh` imposait les clés qui comptent via
 `kwriteconfig6` : effets KWin (translucency, wobbly, geometry change,
-better-blur-dx), règles de fenêtres, etc. Le script complet est dans
-`dotfiles-machine` ; récupère-le du tag `v2-full` si tu veux le rejouer.
+better-blur-dx), règles de fenêtres, etc. Le script complet est conservé dans
+le tag `v2-full` ; récupère-le si tu veux le rejouer.
 
 À la main, les commandes sont de la forme :
 
